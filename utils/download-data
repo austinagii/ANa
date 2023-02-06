@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+# get the directory of the script
+cd $(dirname $(readlink -f $0))
+
+# download the reddit jokes dataset
+curl -L -o ../data/text_emotion.csv https://query.data.world/s/gvmyfoxhetec4dbecnvdwsmohfj5cw

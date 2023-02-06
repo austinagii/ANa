@@ -1,0 +1,16 @@
+# ignore node dependencies but keep husky / commitlint config 
+node_modules
+!.husky
+!.commitlint.config.js
+
+# ignore the files and subfolders in the data directory
+data/**
+!data/.gitkeep
+
+# ignore any scratch files
+**/*scratch.*
+
+# ignore hidden files by default except gitignore and gitkeep
+.*
+!**/.gitkeep
+!**/.gitignore
