@@ -1,4 +1,6 @@
 {
+  "name": "gibber",
+  "version": "0.0.1",
   "dependencies": {
     "npx": "^10.2.2"
   },
@@ -8,7 +10,8 @@
     "husky": "^8.0.3"
   },
   "scripts": {
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "start-ui": "cd gibber-ui && npm run dev"
   },
   "husky": {
     "hooks": {
