@@ -13,6 +13,7 @@ torchvision = "*"
 torchaudio = "*"
 huggingface = "*"
 datasets = "*"
+fastapi = {extras = ["all"], version = "*"}
 
 [dev-packages]
 jupyter = "*"
