@@ -8,6 +8,7 @@ import pandas as pd
 
 from pathlib import Path 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 class Gibber:
     def __init__(self):
@@ -55,6 +56,15 @@ class Gibber:
 gibber = Gibber()
 app = FastAPI()
 
+# define the cors configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://localhost:5173'],
+    allow_credentials=True,
+    allow_methods=['GET'],
+    allow_headers=['*']
+)
+
 @app.get("/")
 def get_gibber():
-    return gibber.generate_text() 
+    return {'text': gibber.generate_text()}
