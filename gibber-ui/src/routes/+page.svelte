@@ -1,8 +1,9 @@
 <style>
-    #gibber-generate-form {
+    #gibber-content-area {
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
         height: 100vh;
     }
 
@@ -11,15 +12,19 @@
     }
 </style>
 
-<script>
-    function handleSubmit() {
-        console.log('submitted');    
+<script lang="ts">
+    const api_url: string = 'http://api.gibber.kadeemaustin.ai:8000';
+    let gibber = "";
+    
+    async function fetch_text() {
+        let responseJson = await fetch(api_url).then(response => response.json());
+        gibber = responseJson['text'];
     }
 </script>
 
-<div>
-    <form on:submit|preventDefault={handleSubmit} id='gibber-generate-form'>
-        <input type="text"/>
-        <button type="submit">Submit</button>
+<div id='gibber-content-area'>
+    <p>{gibber}</p>
+    <form on:submit|preventDefault={fetch_text}>
+        <button type="submit">Generate New Gibber</button>
     </form>
 </div>
