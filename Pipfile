@@ -5,19 +5,8 @@ name = "pypi"
 
 [packages]
 pandas = "*"
-numpy = "*"
-scipy = "*"
-matplotlib = "*"
 torch = "*"
-torchvision = "*"
-torchaudio = "*"
-huggingface = "*"
-datasets = "*"
-fastapi = {extras = ["all"], version = "*"}
-
-[dev-packages]
-jupyter = "*"
-jupyterlab = "*"
+fastapi = "*"
 
 [requires]
 python_version = "3.9"
