@@ -6,10 +6,6 @@
         flex-direction: column;
         height: 100vh;
     }
-
-    #gibber-generate-form input[type="text"] {
-        margin-right: 10px;
-    }
 </style>
 
 <script lang="ts">
