@@ -1,6 +1,0 @@
-#!/bin/bash
-
-SCRIPT_DIR=$(dirname $(realpath $0))
-
-cd $docker $SCRIPT_DIR/../../gibber-api/ && \
-    pipenv run uvicorn --reload src.gibber:app
