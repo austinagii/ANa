@@ -9,7 +9,7 @@
 </style>
 
 <script lang="ts">
-    const api_url: string = 'http://api.gibber.kadeemaustin.ai:8000';
+    const api_url: string = 'http://localhost:8000';
     let gibber = "";
     
     async function fetch_text() {

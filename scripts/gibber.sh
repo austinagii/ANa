@@ -28,6 +28,9 @@ case $1 in
     connect)
         bash $SCRIPT_DIR/gibber-connect.sh $2
         ;;
+    build)
+        bash $SCRIPT_DIR/gibber-build.sh $2
+        ;;
     *)
         echo "gibber '$1' is not a recognized command"
         echo "See gibber --help for a list of available commands"
