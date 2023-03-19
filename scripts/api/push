@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Build and push the Gibber API docker container using the latest version from Github
+
+# Get the path to the directory containing this script
+SCRIPT_DIR=$(dirname $(realpath $0))
+
+# Get the current version of the Gibber API 
+VERSION=$(cat $SCRIPT_DIR/../../version)
+
+echo "Building docker image for Gibber API v$VERSION"
+
+# Build and push a container with the current version of the Gibber API packaged inside
+docker image build -t austinagi/gibber-api:$VERSION --no-cache $SCRIPT_DIR/../.. && \
+    docker image push austinagi/gibber-api:$VERSION
