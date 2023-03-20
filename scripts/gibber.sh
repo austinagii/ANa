@@ -7,6 +7,7 @@ Usage: gibber <command>
 A micro language model that creates twitter length text when prompted with a topic
 
 Available commands:
+    build       builds a docker container with the current version of the specified component
     connect     creates an ssh connection with the specified resource
 END
 )
@@ -17,13 +18,20 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-# Get the path to the directory containing this script  
-SCRIPT_DIR=$(dirname $(realpath $0))
-BASE_DIR=$(dirname $SCRIPT_DIR)
+# cover the following commands
+# build
+# usage: gibber build ui || gibber build api || gibber build
+# deploy 
+# start 
+# stop 
+# connect
 
 case $1 in
     --help)
         echo "$USAGE_MSG"
+        ;;
+    build) 
+        bash $SCRIPT_DIR/gibber-build.sh $2
         ;;
     connect)
         bash $SCRIPT_DIR/gibber-connect.sh $2
@@ -32,7 +40,7 @@ case $1 in
         bash $SCRIPT_DIR/gibber-build.sh $2
         ;;
     *)
-        echo "gibber '$1' is not a recognized command"
-        echo "See gibber --help for a list of available commands"
+        echo "gibber build '$1' is not a recognized command"
+        echo "See gibber build --help for a list of available commands"
         ;;
 esac
