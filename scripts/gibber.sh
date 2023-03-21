@@ -33,6 +33,9 @@ case $1 in
     build) 
         bash $SCRIPT_DIR/gibber-build.sh $2
         ;;
+    deploy)
+        bash $SCRIPT_DIR/gibber-deploy.sh $2
+        ;;
     connect)
         bash $SCRIPT_DIR/gibber-connect.sh $2
         ;;

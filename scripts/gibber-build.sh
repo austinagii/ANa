@@ -19,6 +19,7 @@ fi
 
 # TODO: Change the default behavior to prevent building with the same version number
 #       unless the --force flag is specified, also... add --force flag
+# Consider separating the steps for building and pushing the docker image
 case $1 in
     --help|-h)
         echo "$USAGE_MSG"
