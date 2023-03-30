@@ -1,3 +1,0 @@
-#!/bin/bash
-
-cd $API_ROOT_DIR && pipenv run uvicorn --reload src.gibber:app

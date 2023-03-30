@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Let's define some basic project variables
+export PROJECT_NAME=ana
+export USERNAME=austinagi
+
+# Get the current directory
+export SCRIPT_DIR=$(dirname $(realpath $0))
+# Get the root directory of the project
+export ROOT_DIR=$(dirname $SCRIPT_DIR)
+# Get the path to the config directory
+export CONFIG_DIR=$ROOT_DIR/config
+# Get the root directory of the ANa API
+export API_ROOT_DIR=$ROOT_DIR/ana-api
+# Get the root directory of the ANa UI
+export UI_ROOT_DIR=$ROOT_DIR/ana-ui
+
+# For the curious ;)
+alias vela="cd $MODEL_ROOT_DIR"
+alias puppis="cd $UI_ROOT_DIR"
+alias carina="cd $API_ROOT_DIR"
+alias argo=c"d $ROOT_DIR"
