@@ -19,21 +19,22 @@ Options:
 END
 )
 
-# Show a usage message if no arguments are passed
-if [ $# -eq 0 ]; then
-    echo "$USAGE_MSG"
-    exit 1
-fi
+exitWithMessageIfNoArgs $@ "$USAGE_MSG"
 
-#  Create variables to store the arguments values 
+# validate the command line arguments
+PARSED_ARGS=$(getopt -o fsh -l force,show-version,help --name build -- "$@")
+if [ $? -gt 0 ]; then
+    echo "See 'ana build --help' for a list of valid options"
+    exit 1
+fi 
+
+# Create variables to store the argument values 
 COMPONENT=""
 FORCE=false
 SHOW_VERSION=false
 
 # parse the command line arguments and store them in their associated variables
-PARSED_ARGS=$(getopt -o fsh -l force,show-version,help --name build -- "$@")
 eval set -- "$PARSED_ARGS"
-
 while true; do
     case $1 in
         --help|-h)
@@ -52,12 +53,15 @@ while true; do
             COMPONENT=$2
             break
             ;;
-        *)
-            echo "build: Invalid option '$1'"
-            echo "See 'ana build --help' for a list of valid options"
-            ;;
     esac
 done 
+
+# Exit with an error if an invalid component is specified
+isValidComponent $COMPONENT || {
+    echo "Invalid component '$COMPONENT'"
+    echo "see 'ana build --help'"
+    exit 1
+}
 
 # Get the current version of the specified component
 case $COMPONENT in
@@ -69,10 +73,9 @@ case $COMPONENT in
         VERSION=$(jq -r '.version' $UI_ROOT_DIR/package.json)
         BUILD_DIR=$UI_ROOT_DIR
         ;;
-    *)
-        echo "Invalid component '$COMPONENT'"
-        echo "see 'ana build --help'"
-        exit 1
+    model)
+        echo "build: support for component '$COMPONENT' coming sooon..."
+        exit 0
         ;;
 esac
 

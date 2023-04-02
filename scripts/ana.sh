@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Load shared variables from the rc file 
+SCRIPT_DIR=$(dirname $(realpath $0))
+source $SCRIPT_DIR/.anarc
+
 USAGE_MSG=$(cat <<-END
  
 Usage: ana [options] <command> 
@@ -33,11 +37,7 @@ Try 'ana <command> --help' for more information on a specific commnad
 END
 )
 
-# Show a usage message if no arguments are specified 
-if [[ $# -eq 0 ]]; then
-    echo "$USAGE_MSG"
-    exit 1
-fi
+exitWithMessageIfNoArgs $@ "$USAGE_MSG"
 
 # Show a usage message if either 'help' option is specified
 if [[ $1 == "-h" || $1 == "--help" ]]; then
@@ -45,9 +45,7 @@ if [[ $1 == "-h" || $1 == "--help" ]]; then
     exit 0
 fi
 
-# Load shared variables from the rc file 
-SCRIPT_DIR=$(dirname $(realpath $0))
-source $SCRIPT_DIR/.anarc
+
 
 # Execute the script corresponding to the specified command 
 COMMAND=$1
