@@ -4,9 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-numpy = "*"
-torch = "*"
-pandas = "*"
+numpy = "~=1.23"
+torch = "~=2.0"
+pandas = "~=2.0"
 featuretoggles = "~=1.0"
 
 [dev-packages]
@@ -14,4 +14,4 @@ jupyterlab = "*"
 pytest = "~=7.3"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
