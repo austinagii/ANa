@@ -9,6 +9,7 @@ torch = "~=2.0"
 pandas = "~=2.0"
 featuretoggles = "~=1.0"
 nltk = "~=3.8"
+tokenizer = "~=3.4"
 
 [dev-packages]
 jupyterlab = "*"
