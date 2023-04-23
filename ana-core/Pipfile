@@ -8,6 +8,7 @@ numpy = "~=1.23"
 torch = "~=2.0"
 pandas = "~=2.0"
 featuretoggles = "~=1.0"
+nltk = "~=3.8"
 
 [dev-packages]
 jupyterlab = "*"
