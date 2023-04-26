@@ -1,11 +1,10 @@
 import torch 
 
+from core import Token
 from collections.abc import Sequence
 from types import GeneratorType
-from typing import TypeAlias, Generator
+from typing import Generator
 
-
-Token: TypeAlias = str
 
 class TokenCodec:
     """Encodes and decodes tokens"""
@@ -29,7 +28,7 @@ class TokenCodec:
         match tokens:
             case Sequence():
                 return [self._encode(token) for token in tokens]
-            case Generator():
+            case GeneratorType():
                 return (self._encode(token) for token in tokens)
             case _:
                 raise TypeError("Argument must be a sequence or generator")
