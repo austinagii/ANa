@@ -18,13 +18,14 @@ def test_number_of_encoded_tokens_equals_number_of_tokens(codec, tokens):
 def test_each_token_has_a_unique_encoding(codec, tokens):
     token_by_encoding = {}
     encoded_tokens = codec.encode(tokens)
-    for i in range(len(tokens)):
-        token = tokens[i] 
-        encoding = encoded_tokens[i]
-        if mapped_token := token_by_encoding.get(encoding) is not None:
-            assert mapped_token == token
-        else:
+    # Ensure the each encoding is unique to a given token
+    # i.e a single encoding does not map to more than one token 
+    for i in range(len(encoded_tokens)):
+        token, encoding = tokens[i], encoded_tokens[i]
+        if (mapped_token := token_by_encoding.get(encoding)) is None:
             token_by_encoding[encoding] = token 
+        else:
+            assert mapped_token == token
 
 def test_encoded_tokens_are_decoded_correctly(codec, tokens):
     encoded_tokens = codec.encode(tokens)
