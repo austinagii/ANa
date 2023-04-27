@@ -1,5 +1,3 @@
-import copy
-
 from core import Token
 from typing import Generator
 from collections import UserDict
