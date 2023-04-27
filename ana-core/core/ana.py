@@ -7,8 +7,6 @@ import torch.random
 import pandas as pd 
 
 from pathlib import Path 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 class ANa:
     def __init__(self):
@@ -51,20 +49,3 @@ class ANa:
             current_sequence += self.token_by_idx[current_token]
             current_sequence_length += 1
         return current_sequence
-
-
-gibber = Gibber()
-app = FastAPI()
-
-# define the cors configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=['http://localhost:8000'],
-    allow_credentials=True,
-    allow_methods=['GET'],
-    allow_headers=['*']
-)
-
-@app.get("/")
-def get_gibber():
-    return {'text': gibber.generate_text()}
