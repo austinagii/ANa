@@ -1,5 +1,5 @@
 configurable_ngram_size:
-  value: true
+  value: false
   name: Configure n-gram size
   description: Toggles whether a user can toggle the ngram size
   creation_date: 2023-04-28
