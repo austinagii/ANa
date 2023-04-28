@@ -1,7 +1,7 @@
 import copy 
 
 from typing import Generator
-from core import Token
+from coretypes import Token
 
 
 class NGramReader:

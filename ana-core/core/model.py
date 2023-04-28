@@ -1,10 +1,10 @@
 import logging 
 import torch
 
-from core import Token, EncodedToken
-from core.codec import TokenCodec
-from core.tokenizer import Tokenizer
-from core.reader import NGramReader
+from coretypes import Token, EncodedToken
+from codec import TokenCodec
+from tokenizer import Tokenizer
+from reader import NGramReader
 from typing import Generator, Any
 from types import GeneratorType
 from collections.abc import Sequence
@@ -21,7 +21,7 @@ class NGramModel:
         self.codec = TokenCodec()
         self.reader = NGramReader(ngram_size=ngram_size)
         
-    def train(self, corpus):
+    def train(self, corpus: Sequence[Token]):
         """Train the model on the tokens from the training corpus"""
         tokens = self.tokenizer.tokenize(corpus)
         encoded_tokens = self.codec.encode(tokens)
@@ -38,7 +38,7 @@ class NGramModel:
             self._ngram_proba[ngram] = frequency
         self._ngram_proba = self._ngram_proba / self._ngram_proba.sum(axis=self.ngram_size - 1, keepdims=True)
         self._ngram_proba = torch.where(self._ngram_proba > 0, self._ngram_proba, 0)
-        # return self
+        return self
     
     def __call__(self, prompt: str = None) -> str:
         """Generate a response to the given prompt
