@@ -27,13 +27,13 @@ class TokenCodec:
         """
         match tokens:
             case Sequence():
-                return [self._encode(token) for token in tokens]
+                return [self.encode_token(token) for token in tokens]
             case GeneratorType():
-                return (self._encode(token) for token in tokens)
+                return (self.encode_token(token) for token in tokens)
             case _:
                 raise TypeError("Argument must be a sequence or generator")
             
-    def _encode(self, token: Token) -> int:
+    def encode_token(self, token: Token) -> int:
         """Returns the encoding of the provided token"""
         # assign a unique id to each token only if one is not already assigned
         if (token_id := self._id_by_token.get(token)) is None:
