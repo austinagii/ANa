@@ -1,4 +1,4 @@
-from core import Token
+from coretypes import Token
 from typing import Generator
 from collections import UserDict
 

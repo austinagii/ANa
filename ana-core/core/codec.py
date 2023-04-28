@@ -1,6 +1,6 @@
 import torch 
 
-from core import Token
+from coretypes import Token
 from collections.abc import Sequence
 from types import GeneratorType
 from typing import Generator
