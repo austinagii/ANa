@@ -6,7 +6,7 @@ import torch.random
 import argparse
 import pandas as pd 
 
-from model import NGramModel
+from models import NGramModel
 from pathlib import Path 
 from featuretoggles import TogglesList
 
