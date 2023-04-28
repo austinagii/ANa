@@ -1,9 +1,13 @@
 import logging 
 import torch
 
+from core import Token, EncodedToken
 from core.codec import TokenCodec
 from core.tokenizer import Tokenizer
 from core.reader import NGramReader
+from typing import Generator, Any
+from types import GeneratorType
+from collections.abc import Sequence
         
 class NGramModel:
     def __init__(self, 
@@ -36,15 +40,57 @@ class NGramModel:
         self._ngram_proba = torch.where(self._ngram_proba > 0, self._ngram_proba, 0)
         # return self
     
-    def __call__(self, prompt=None):
-        pass
-        # # TODO: handle the case where the prompt is shorter than the ngram size
-        # # choose a random letter as the starting prompt is none is provided
-        # if prompt is None or prompt == "":
-        #     # prompt = self._vocabulary[random.randint(0, len(self._vocabulary))]
-        #     prompt = "dog"
-        # # initialize the response with the prompt as the lead 
-        # response = codec.encode(prompt)
-        # # build the remainder of the response one token at a time using the ngram model
-        # next_token = None
-        # count 
+    def __call__(self, prompt: str = None) -> str:
+        """Generate a response to the given prompt
+
+        Raises a VaueError if the prompt is empty 
+        """
+        # TODO: Handle the condition where the prompt is shorter than the ngram size
+        # Raise an error if an empty prompt is provided
+        if prompt is None or len(prompt.strip()) == 0:
+            raise ValueError("The prompt cannot be empty")
+        # Begin the response with the prompt 
+        encoded_response = self.codec.encode(prompt)
+        # Build the remainder of the response one token at a time until the response
+        # is complete or the maximum response length is reached
+        current_ngram = self._get_last(self._to_ngram_stream(encoded_response))
+        next_token = None
+        stop_token = self.codec.encode_token('.')
+        while next_token != stop_token and len(encoded_response) < self.max_response_length:
+            next_token = self._predict_next_token(current_ngram) 
+            encoded_response.append(next_token)
+            current_ngram = current_ngram[1:] + (next_token,)
+        return self.codec.decode(encoded_response)
+
+    def _to_ngram_stream(
+        self, 
+        text: Sequence[Token | EncodedToken]
+    ) -> Generator[tuple[Token|EncodedToken, ...], None, None]:
+        """Convert a sequence of tokens to a stream of ngrams"""
+        tokens = self.tokenizer.tokenize(text)
+        for encoded_ngram in self.reader.read(tokens):
+            yield tuple(encoded_ngram)
+
+    def _get_last(self, input: Sequence[Any] | Generator[Any, None, None]) -> Any:
+        """Get the last value from a sequence or generator
+        
+        Note that if `input` is a generator, this function will exhaust it
+        """
+        value = None
+        match input:
+            case Sequence():
+                if len(input) > 0:
+                    value = input[-1]
+            case GeneratorType():
+                # Read values from the generator until it is exhausted.
+                # value will contain the last value read from the generator 
+                for value in input:
+                    pass
+            case _:
+                raise ValueError("The input must be a sequence or generator")
+        return value
+
+    def _predict_next_token(self, ngram: tuple[int, ...]) -> int:
+        """Predict the next token given the ngram"""
+        next_token_proba = self._ngram_proba[ngram[1:]]
+        return torch.multinomial(next_token_proba, 1).item()
