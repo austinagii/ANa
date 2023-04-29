@@ -13,13 +13,11 @@ from featuretoggles import TogglesList
 class FeatureFlags(TogglesList):
     configurable_ngram_size: bool
 
-feature_flags = FeatureFlags('features.yaml')
 
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger("ANa")
 
-class ANa:
-    def __init__(self, ngram_size: int = None):
-        """Load the dataset and model"""
-        log = logging.getLogger(ANa.__name__)
+def _load_training_corpus():
         # load the dataset
         dataset_path = Path(__file__).absolute().joinpath("../../data/text_emotion.csv").resolve()
         log.info('Loading dataset from {dataset_path}')
@@ -29,26 +27,21 @@ class ANa:
         else:
             log.info('Dataset successfully loaded')
         dataset = pd.read_csv(dataset_path)
-        corpus = dataset['content'].str.cat(sep=' ')
-        
-        if feature_flags.configurable_ngram_size:
-            self.model = NGramModel(ngram_size=ngram_size)
-        else:
-            self.model = BigramModel()
-        self.model.train(corpus)
+        return dataset['content'].str.cat(sep=' ')
 
-    def generate_text(self, prompt: str, max_length: int = 120) -> str:
-        """Generates text until a full stop is encountered or until the max length is reached"""
-        return self.model(prompt) 
-        
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-
+    # load the application configuration
+    feature_flags = FeatureFlags('features.yaml')
     parser = argparse.ArgumentParser(description='Generate text using a trained model')
     if feature_flags.configurable_ngram_size:
         parser.add_argument('--ngram-size', type=int, default=2, help='The size of the ngrams to use')
     args = parser.parse_args()
-
-    ana = ANa(**vars(args))
+    # create and train the model
+    if feature_flags.configurable_ngram_size:
+        model = NGramModel(**vars(args))
+    else:
+        model = BigramModel()
+    model.train(_load_training_corpus())
+    # respond to the user's prompts until they wish to stop
     while (prompt := input('Give me a prompt: ')) != 'bye':
-        print(ana.generate_text(prompt))
+        print(model(prompt))
