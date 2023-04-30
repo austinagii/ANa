@@ -73,9 +73,9 @@ case $COMPONENT in
         VERSION=$(jq -r '.version' $UI_ROOT_DIR/package.json)
         BUILD_DIR=$UI_ROOT_DIR
         ;;
-    model)
-        echo "build: support for component '$COMPONENT' coming sooon..."
-        exit 0
+    core)
+        VERSION=$(awk -F "=" '/version/ {print $2}' $CORE_ROOT_DIR/setup.cfg | tr -d ' ')
+        BUILD_DIR=$CORE_ROOT_DIR
         ;;
 esac
 

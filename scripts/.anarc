@@ -14,9 +14,11 @@ export CONFIG_DIR=$ROOT_DIR/config
 export API_ROOT_DIR=$ROOT_DIR/ana-api
 # Get the root directory of the ANa UI
 export UI_ROOT_DIR=$ROOT_DIR/ana-ui
+# Get the root directory of the ANa language model
+export CORE_ROOT_DIR=$ROOT_DIR/ana-core
 
 # For the curious ;)
-alias vela="cd $MODEL_ROOT_DIR"
+alias vela="cd $CORE_ROOT_DIR"
 alias puppis="cd $UI_ROOT_DIR"
 alias carina="cd $API_ROOT_DIR"
 alias argo=c"d $ROOT_DIR"
@@ -40,7 +42,7 @@ isValidComponent() {
         exit 1
     fi
 
-    COMPONENTS=("ui" "api" "model")
+    COMPONENTS=("ui" "api" "core")
     for component in "${COMPONENTS[@]}"; do
         if [[ $component = $1 ]]; then 
             return 0
