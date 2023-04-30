@@ -1,4 +1,4 @@
-# Gibber Logbook
+# ANa Logbook
 
 ## Goal 
 Create a language model which can be prompted with a specific topic (e.g machine learning) and will return a tweet length response about the topic
