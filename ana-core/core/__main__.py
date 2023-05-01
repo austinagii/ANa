@@ -7,12 +7,7 @@ from pathlib import Path
 import pandas as pd 
 from featuretoggles import TogglesList
 
-from core.language.models import NGramModel, BigramModel
-
-
-class FeatureFlags(TogglesList):
-    configurable_ngram_size: bool
-
+from core.language.models import NGramModel 
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("ANa")
@@ -31,16 +26,12 @@ def _load_training_corpus():
 
 if __name__ == "__main__":
     # load the application configuration
-    feature_flags = FeatureFlags('features.yaml')
     parser = argparse.ArgumentParser(description='Generate text using a trained model')
-    if feature_flags.configurable_ngram_size:
-        parser.add_argument('--ngram-size', type=int, default=2, help='The size of the ngrams to use')
+    parser.add_argument('--ngram-size', type=int, default=2, help='The size of the ngrams to use')
     args = parser.parse_args()
+    
     # create and train the model
-    if feature_flags.configurable_ngram_size:
-        model = NGramModel(**vars(args))
-    else:
-        model = BigramModel()
+    model = NGramModel(**vars(args))
     model.train(_load_training_corpus())
     # respond to the user's prompts until they wish to stop
     while (prompt := input('Give me a prompt: ')) != 'bye':
