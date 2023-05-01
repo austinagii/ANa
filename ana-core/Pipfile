@@ -11,6 +11,7 @@ featuretoggles = "~=1.0"
 nltk = "~=3.8"
 tokenizer = "~=3.4"
 grpcio = "~=1.54"
+grpcio-tools = "~=1.54"
 
 [dev-packages]
 jupyterlab = "*"
