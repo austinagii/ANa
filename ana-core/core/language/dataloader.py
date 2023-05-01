@@ -11,7 +11,7 @@ class DataLoader:
     def load_training_corpus(self):
         # load the dataset
         dataset_path = Path(__file__).absolute().joinpath("../../../data/text_emotion.csv").resolve()
-        self.log.info('Loading dataset from {dataset_path}')
+        self.log.info(f'Loading dataset from {dataset_path}')
         if not dataset_path.exists():
             self.log.fatal(f'The dataset was not found at the specified path: "{dataset_path}"')
             sys.exit(-1)
