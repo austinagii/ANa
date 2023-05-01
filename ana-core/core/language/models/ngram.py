@@ -1,13 +1,15 @@
+from collections.abc import Sequence
+from typing import Any, Generator
+from types import GeneratorType
+
 import logging 
 import torch
 
-from coretypes import Token, EncodedToken
-from codec import TokenCodec
-from tokenizer import Tokenizer
-from reader import NGramReader
-from typing import Generator, Any
-from types import GeneratorType
-from collections.abc import Sequence
+# TODO: Rename coretypes to types
+from core.language.codec import TokenCodec
+from core.language.coretypes import EncodedToken, Token
+from core.language.reader import NGramReader
+from core.language.tokenizer import Tokenizer
         
 class NGramModel:
     def __init__(self, 

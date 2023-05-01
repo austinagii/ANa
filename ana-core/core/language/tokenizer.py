@@ -1,6 +1,7 @@
-from coretypes import Token
-from typing import Generator
 from collections import UserDict
+from typing import Generator
+
+from core.language.coretypes import Token
 
 
 class Tokenizer:
