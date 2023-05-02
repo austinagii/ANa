@@ -13,10 +13,14 @@ A(rgo) Na(vis) is a language model that generates short text obout a prompted to
 Options:
     -h, --help  Show this message
 
+Agent commands:
+    chat        Start a chat with ANa
+                Example: ana chat
+
 Component management commands:
     build       Build an image of a component from its dockerfile
                 Example: ana build api 
-
+    
     deploy      Deploy an image of a component to a target environment
                 Example: ana deploy api 1.0.0
 
@@ -54,6 +58,9 @@ case $COMMAND in
     # component management commands
     build) 
         bash $SCRIPT_DIR/build.sh "$@"
+        ;;
+    chat)
+        bash $SCRIPT_DIR/chat.sh "$@"
         ;;
     deploy)
         bash $SCRIPT_DIR/deploy.sh "$@"

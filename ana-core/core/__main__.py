@@ -14,8 +14,8 @@ log = logging.getLogger("ANa")
 
 if __name__ == "__main__":
     # load the application configuration
-    parser = argparse.ArgumentParser(description='Generate text using a trained model')
-    parser.add_argument('--ngram-size', type=int, default=2, help='The size of the ngrams to use')
+    parser = argparse.ArgumentParser(description='Start a chat with ANa')
+    parser.add_argument('--ngram-size', type=int, default=2, help='The size of the ngrams')
     args = parser.parse_args()
     
     # create and train the model
