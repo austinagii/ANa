@@ -1,5 +1,8 @@
 <style>
-    #gibber-content-area {
+    #prompt-completion {
+        padding: 3em;
+    }
+    #chat-area {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -9,18 +12,27 @@
 </style>
 
 <script lang="ts">
-    const api_url: string = 'http://localhost:8000';
-    let gibber = "";
+    let prompt: string = "";
+    let promptCompletion: string = "";
     
-    async function fetch_text() {
-        let responseJson = await fetch(api_url).then(response => response.json());
-        gibber = responseJson['text'];
+    async function completePrompt() {
+        let requestJson = { 'prompt': prompt };
+        let responseJson = await fetch('http://localhost:8000/prompt-completion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestJson)
+        }).then(response => response.json());
+        promptCompletion = responseJson['completion'];
     }
 </script>
 
-<div id='gibber-content-area'>
-    <p>{gibber}</p>
-    <form on:submit|preventDefault={fetch_text}>
-        <button type="submit">Generate New Gibber</button>
+<div id='chat-area'>
+    <p id="prompt-completion">{promptCompletion}</p>
+    <form on:submit|preventDefault={completePrompt}>
+        <label for="prompt">Prompt:</label>
+        <input id="prompt-input" type="text" name="prompt" bind:value={prompt}>
+        <button type="submit">Go</button>
     </form>
 </div>
