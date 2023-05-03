@@ -17,10 +17,12 @@ app = FastAPI()
 # define the cors configuration
 app.add_middleware(
     CORSMiddleware,
+    # Change these values in non-dev mode
     allow_origins=['*'],
     allow_credentials=True,
-    allow_methods=['GET'],
-    allow_headers=['*']
+    allow_methods=['*'],
+    allow_headers=['*'],
+    max_age=0   
 )
 
 @app.post("/prompt-completion")
