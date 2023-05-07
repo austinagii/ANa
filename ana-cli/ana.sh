@@ -37,6 +37,8 @@ Other commands:
     connect     Create an ssh connection to a given environments virtual machine 
                 Example: ana connect production
 
+    infra       Manage the cloud infrastructure where ANa is deployed
+
 Try 'ana <command> --help' for more information on a specific commnad
 END
 )
@@ -77,6 +79,9 @@ case $COMMAND in
     # other commands
     connect)
         bash $SCRIPT_DIR/connect.sh "$@"
+        ;;
+    infra)
+        bash $SCRIPT_DIR/infra/infra.sh "$@"
         ;;
     *)
         echo "ana '$COMMAND' is not a recognized command"
