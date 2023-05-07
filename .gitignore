@@ -15,3 +15,6 @@ data/**
 !**/.gitkeep
 !**/.gitignore
 *.pem
+
+config/infrastructure/azure.config
+config/security/certs.cfg

@@ -68,7 +68,12 @@ done
 # 2. Create the necessary resource groups (use the --dev-only flag to only create the dev resource group)
 
 # Load the infra configuration
-source $CLI_ROOT_DIR/infra/.env
+CONFIG_DIR=$ROOT_DIR/config
+INFRA_CONFIG_ROOT_DIR=$CONFIG_DIR/infrastructure
+SECURITY_CONFIG_ROOT_DIR=$CONFIG_DIR/security
+CERT_ROOT_DIR=$SECURITY_CONFIG_ROOT_DIR/certs
+
+source $INFRA_CONFIG_ROOT_DIR/azure.config
 
 # Only login if not already logged in or re-authentication is required
 if az account show &> /dev/null && ! $LOGIN; then
@@ -113,11 +118,12 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+
 echo "Generating certificate"
 openssl req -x509 -new -newkey rsa:2048 -nodes \
-            -config $CLI_ROOT_DIR/infra/certs.cfg \
-            -keyout $CLI_ROOT_DIR/infra/certs/key.pem \
-            -out $CLI_ROOT_DIR/infra/certs/cert.pem &>/dev/null
+            -config $SECURITY_CONFIG_ROOT_DIR/certs.cfg \
+            -keyout $CERT_ROOT_DIR/key.pem \
+            -out $CERT_ROOT_DIR/cert.pem &>/dev/null
 
 if [ $? -eq 0 ]; then
     echo "Certificate generated successfully"
@@ -128,11 +134,11 @@ else
 fi
 
 # create the pem file for use with azure
-cat $CLI_ROOT_DIR/infra/certs/key.pem > $CLI_ROOT_DIR/infra/certs/azure.cert.pem 
-cat $CLI_ROOT_DIR/infra/certs/cert.pem >> $CLI_ROOT_DIR/infra/certs/azure.cert.pem 
+cat $CERT_ROOT_DIR/key.pem > $CERT_ROOT_DIR/azure.cert.pem 
+cat $CERT_ROOT_DIR/cert.pem >> $CERT_ROOT_DIR/azure.cert.pem 
 
 # create the service principal
 az ad sp create-for-rbac --name ANaServicePrincipal \
                          --role contributor \
                          --scopes $RESOURCE_GROUP_ID \
-                         --cert @$CLI_ROOT_DIR/infra/certs/azure.cert.pem
+                         --cert @$CERT_ROOT_DIR/azure.cert.pem
