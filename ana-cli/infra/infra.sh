@@ -12,17 +12,20 @@ Options:
  
 Commands:
     setup       Provision the ANa infrastructure
-                    Example: ana infra setup
+                Example: ana infra setup
+
+    teardwon    Deprovision the ANa infrastructure
+                Example: ana infra teardown
 END
 )
 
 exitWithMessageIfNoArgs $@ "$USAGE_MSG"
 
 # Load the infra configuration
-CONFIG_DIR=$ROOT_DIR/config
-INFRA_CONFIG_ROOT_DIR=$CONFIG_DIR/infrastructure
-SECURITY_CONFIG_ROOT_DIR=$CONFIG_DIR/security
-CERT_ROOT_DIR=$SECURITY_CONFIG_ROOT_DIR/certs
+export CONFIG_DIR=$ROOT_DIR/config
+export INFRA_CONFIG_ROOT_DIR=$CONFIG_DIR/infrastructure
+export SECURITY_CONFIG_ROOT_DIR=$CONFIG_DIR/security
+export CERT_ROOT_DIR=$SECURITY_CONFIG_ROOT_DIR/certs
 
 source $INFRA_CONFIG_ROOT_DIR/azure.config
 
@@ -49,6 +52,9 @@ done
 case $COMMAND in
     setup)
         bash $SCRIPT_DIR/infra/setup.sh "$@"
+        ;;
+    teardown)
+        bash $SCRIPT_DIR/infra/teardown.sh "$@"
         ;;
     *)
         echo "Unrecognized command '$COMMAND'. See 'ana infra --help' for a list of valid commands"
