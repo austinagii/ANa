@@ -4,6 +4,9 @@
 Create a language model which can be prompted with a specific topic (e.g machine learning) and will return a tweet length response about the topic
 
 ## Timeline
+### 2023-05-06 07:58 EST: [Kadeem] Automating Infrastrcture Management - Setup
+Taking a step away from modeling to automate the provisioning of infrastrcture in Azure. Hopes are that this will make it easy to experiment with different resources as the project goes through different iterations or to just get a clean slate whenever one is needed. The az command has been a godsend and I'm interested to continue learning and using it more.
+
 ### 2023-04-29 01:09 EST: [Kadeem] Initial NGram Model
 Lost a few logbook entries due to carelessness, however, I've successfully created the initial version of the ngram model. This implementation is inefficient though, especially with regards to memory, as it requires a tensor of VOCABULARY_SIZE ^ NGRAM_SIZE to store the ngram probabilities. In addition to some refactoring, documentation and general cleanup this will be addressed.
 
