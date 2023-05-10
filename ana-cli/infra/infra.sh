@@ -14,7 +14,7 @@ Commands:
     setup       Provision the ANa infrastructure
                 Example: ana infra setup
 
-    teardwon    Deprovision the ANa infrastructure
+    teardown    Deprovision the ANa infrastructure
                 Example: ana infra teardown
 END
 )
