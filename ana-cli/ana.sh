@@ -11,7 +11,8 @@ Usage: ana [options] <command>
 A(rgo) Na(vis) is a language model that generates short text obout a prompted topic
 
 Options:
-    -h, --help  Show this message
+    -h, --help      Show this message
+    -v, --version   Show the current version number
 
 Agent commands:
     chat        Start a chat with ANa
@@ -51,6 +52,13 @@ if [[ $1 == "-h" || $1 == "--help" ]]; then
     exit 0
 fi
 
+# Show the version number if the version flag is specified 
+if [[ $1 == "-v" || $1 == "--version" ]]; then
+    version=$(getConfigValue "VERSION" $SCRIPT_DIR/project.conf)
+    name=$(getConfigValue "NAME" $SCRIPT_DIR/project.conf)
+    echo "$name version $version"
+    exit 0
+fi
 
 
 # Execute the script corresponding to the specified command 
