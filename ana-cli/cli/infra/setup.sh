@@ -16,6 +16,8 @@ Options:
     -l, --login     Request login with Azure CLI even if already logged in
                     Note that this may be required if you are not logged in with an id that allows you to create or manage 
                     resource group and service principals
+    -s, --skip      Do not create resources if they already exist. Note that if these resources are not configured properly 
+                    specifying this option can lead to undefined behavior
 
 END
 )
@@ -29,6 +31,7 @@ eval set -- "$PARSED_ARGS"
 DEPLOYMENT=default
 FORCE=false
 LOGIN=false
+SKIP=false
 
 while true; do
     case $1 in
@@ -47,6 +50,10 @@ while true; do
             ;;
         -l|--login)
             LOGIN=true
+            shift 1
+            ;;
+        -s|--skip)
+            SKIP=true
             shift 1
             ;;
         --)
@@ -137,3 +144,6 @@ az ad sp create-for-rbac --name ANaServicePrincipal \
                          --role contributor \
                          --scopes $RESOURCE_GROUP_ID \
                          --cert @$CERT_ROOT_DIR/azure.cert.pem
+
+# login using the service principal
+az login 
