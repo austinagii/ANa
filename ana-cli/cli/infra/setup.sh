@@ -1,59 +1,57 @@
 #!/bin/sh
 
+load_feature_flags
 
-USAGE_MSG=$(cat <<-END
+# TODO: Find a cleaner way to do this, minimizing the number of times the echo command is used
+#       This will be painful if we want to toggle writing to standard error instead of standard out
+function show_usage() {
+    echo 
+    echo "Usage: ana infra setup [options]"
+    echo 
+    echo "Provision the Azure infrastructure required to run ANa"
+    echo 
+    echo "Options:"
+    echo "    -h, --help      Show this message"
+    echo "    -l, --login     Request login with Azure CLI even if already logged in. Note that this may be required"
+    echo "                    if you are not logged in with an id that allows you to create or manage resource groups"
+    echo "                    and service principals"
+    if [[ $FEATURE_INFRA_SKIP_CREATED == true ]]; then
+    echo "    -s, --skip      Do not create resources if they already exist. Note that if these resources are not"
+    echo "                    configured properly specifying this option can lead to undefined behavior"
+    fi
+    echo
 
-Usage: ana infra setup [options] <command>
+}
 
-Provision the Azure infrastructure required to run ANa
-
-Options:
-    -h, --help      Show this message
-    -m, --mode      How the infrastructure should be set up. Valid modes are:
-                    - default:  Create a resource group each for dev and non dev containing their respective resources
-                    - shared:   Create a single resource group with both dev and non dev resources
-                    - unified:  Create a single resource group with no distinction between dev and non dev resources
-    -l, --login     Request login with Azure CLI even if already logged in
-                    Note that this may be required if you are not logged in with an id that allows you to create or manage 
-                    resource group and service principals
-    -s, --skip      Do not create resources if they already exist. Note that if these resources are not configured properly 
-                    specifying this option can lead to undefined behavior
-
-END
-)
-
-exitWithMessageIfNoArgs $@ "$USAGE_MSG"
-
-PARSED_ARGS=$(getopt -o hm:fl -l help,mode:,force,login -- "$@")
+# Parse the command line options
+SHORT_OPTIONS=hl
+LONG_OPTIONS=help,login
+if [[ $FEATURE_INFRA_SKIP_CREATED == true ]]; then
+    SHORT_OPTIONS="$SHORT_OPTIONS""s"
+    LONG_OPTIONS="$LONG_OPTIONS"",skip"
+fi
+# TODO: Do not use getopt error message
+PARSED_ARGS=$(getopt -n "setup" -o $SHORT_OPTIONS -l $LONG_OPTIONS -- "$@")
 eval set -- "$PARSED_ARGS"
 
-# intialize variable to defaults
-DEPLOYMENT=default
-FORCE=false
+# intialize option variables to default values
 LOGIN=false
-SKIP=false
+if [[ $FEATURE_INFRA_SKIP_CREATED == true ]]; then
+    SKIP_CREATED=false
+fi
 
 while true; do
     case $1 in
         -h|--help)
-            echo "$USAGE_MSG"
+            show_usage
             exit 0
-            ;;
-        -m|--mode)
-            DEPLOYMENT_MODE=$2
-            shift 2
-            ;;
-        # TODO: Remove force option
-        -f|--force)
-            FORCE=true
-            shift 1
             ;;
         -l|--login)
             LOGIN=true
             shift 1
             ;;
         -s|--skip)
-            SKIP=true
+            SKIP_CREATED=true
             shift 1
             ;;
         --)
@@ -67,9 +65,9 @@ while true; do
     esac
 done
 
-# move CONFIG_DIR variable to main .anarc file since it will be useful for other commands
+# TODO: Move CONFIG_DIR variable to main .anarc file since it will be useful for other commands
 CONFIG_DIR=$ROOT_DIR/config
-# move following variables to infra command to avoid duplication in setup and destroy scripts
+# TODO: Move following variables to infra command to avoid duplication in setup and destroy scripts
 INFRA_CONFIG_ROOT_DIR=$CONFIG_DIR/infrastructure
 SECURITY_CONFIG_ROOT_DIR=$CONFIG_DIR/security
 CERT_ROOT_DIR=$SECURITY_CONFIG_ROOT_DIR/certs
@@ -90,7 +88,7 @@ else
     echo "Authenticated successfully."
 fi
 
-# Use the authenticated user account create the resource groups and service principals for those groups
+# Use the authenticated user account to create the resource groups and service principals for those groups
 SUBSCRIPTION_ID=$(az account list --query "[?name == '$SUBSCRIPTION_NAME'].id" | jq -r '.[0]')
 if [ -z SUBSCRIPTION_ID ]; then 
     echo "Could not find subscription"
@@ -105,21 +103,20 @@ if [ $? -ne 0 ]; then
 fi
 echo "Switched to subscription '$SUBSCRIPTION_NAME'"
 
-# Create the resource group
-# Check if resource group already exists
+# Create the resource group if one does not already exist
 RESOURCE_GROUP_ID=$(az group list -o tsv --query "[?name == '$RESOURCE_GROUP_NAME'].id | [0]")                 
-if [ -n "$RESOURCE_GROUP_ID" ]; then
-    echo "Resource group already exists. Use either the --force option to ignore this or use 'ana infra destroy' to reset the environment."
+# Exit with an error if we are not skipping created resources
+if [ -n "$RESOURCE_GROUP_ID" ] && [[ $SKIP_CREATED == 'false' ]]; then
+    echo "Error: resource group '$RESOURCE_GROUP_NAME' already exists." >&2
+    echo "Use the --skip flag to ignore this or use 'ana infra destroy' to reset the environment." >&2
     exit 1
 fi
-# Create the resource group if it does not exist
 echo "Creating the resource group '$RESOURCE_GROUP_NAME'"
 RESOURCE_GROUP_ID=$(az group create --location $RESOURCE_GROUP_LOCATION --resource-group $RESOURCE_GROUP_NAME -o tsv --query "id")
 if [ $? -ne 0 ]; then
-    echo "Failed to create the resource group"
+    echo "Failed to create the resource group" >&2
     exit 1
 fi
-
 
 echo "Generating certificate"
 openssl req -x509 -new -newkey rsa:2048 -nodes \
@@ -144,6 +141,3 @@ az ad sp create-for-rbac --name ANaServicePrincipal \
                          --role contributor \
                          --scopes $RESOURCE_GROUP_ID \
                          --cert @$CERT_ROOT_DIR/azure.cert.pem
-
-# login using the service principal
-az login 

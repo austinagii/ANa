@@ -29,7 +29,7 @@ export CERT_ROOT_DIR=$SECURITY_CONFIG_ROOT_DIR/certs
 
 source $INFRA_CONFIG_ROOT_DIR/azure.config
 
-PARSED_ARGS=$(getopt -o h -l help -- "$@")
+PARSED_ARGS=$(getopt -o +h -l help -- "$@")
 eval set -- "$PARSED_ARGS"
 
 while true; do
@@ -40,6 +40,7 @@ while true; do
             ;;
         --)
             COMMAND=$2
+            shift 2
             break
             ;;
         *)

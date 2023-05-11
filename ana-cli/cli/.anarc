@@ -48,6 +48,7 @@ isValidComponent() {
     done 
     return 1 
 }
+export -f isValidComponent
 
 getConfigValue() {
     if [ ! -f $2 ]; then
@@ -64,4 +65,9 @@ getConfigValue() {
     echo $config_value
     exit 0
 }
-export -f isValidComponent
+export -f getConfigValue
+
+load_feature_flags() {
+    source $CLI_ROOT_DIR/features.conf
+}
+export -f load_feature_flags
