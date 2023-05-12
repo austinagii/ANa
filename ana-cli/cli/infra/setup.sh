@@ -107,8 +107,9 @@ echo "Switched to subscription '$SUBSCRIPTION_NAME'"
 RESOURCE_GROUP_ID=$(az group list -o tsv --query "[?name == '$RESOURCE_GROUP_NAME'].id | [0]")                 
 # Exit with an error if we are not skipping created resources
 if [ -n "$RESOURCE_GROUP_ID" ] && [[ $SKIP_CREATED == 'false' ]]; then
-    echo "Error: resource group '$RESOURCE_GROUP_NAME' already exists." >&2
-    echo "Use the --skip flag to ignore this or use 'ana infra destroy' to reset the environment." >&2
+    echo "Error: Resource group '$RESOURCE_GROUP_NAME' already exists." >&2
+    echo "Use the '--skip' flag to continue without re-creating the resource group or use 'ana infra destroy' to reset"\
+         "the environment." >&2
     exit 1
 fi
 echo "Creating the resource group '$RESOURCE_GROUP_NAME'"
@@ -118,26 +119,61 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Generating certificate"
-openssl req -x509 -new -newkey rsa:2048 -nodes \
-            -config $SECURITY_CONFIG_ROOT_DIR/certs.cfg \
-            -keyout $CERT_ROOT_DIR/key.pem \
-            -out $CERT_ROOT_DIR/cert.pem &>/dev/null
-
-if [ $? -eq 0 ]; then
-    echo "Certificate generated successfully"
+# Generate the certs for service principal authentication
+# TODO: Ensure cert config exists before attempting to create certs
+# Throw an error if the cert files exist and the --skip flag is not specified
+if [ -f $CERT_ROOT_DIR/key.pem ] || [ -f $CERT_ROOT_DIR/cert.pem ] || [ -f $CERT_ROOT_DIR/azure.cert.pem ]; then
+    if [[ $SKIP_CREATED == false ]]; then
+        echo "Error: Certificates have already been generated." >&2
+        echo "Use the '--skip' flag to continue without re-creating the certificates or use 'ana infra destroy' to reset"\
+             "the environment." >&2
+        exit 1
+    fi
 else
-    # TODO: Add --debug flag 
-    echo "An error occurred while generating the certificate. Enable --debug for more detail."
-    # clean up any files that may have been created
+    echo "Generating certs now"
+    openssl req -x509 -new -newkey rsa:2048 -nodes \
+                -config $SECURITY_CONFIG_ROOT_DIR/certs.cfg \
+                -keyout $CERT_ROOT_DIR/key.pem \
+                -out $CERT_ROOT_DIR/cert.pem &>/dev/null
+
+    if [ $? -eq 0 ]; then
+        echo "Certificate generated successfully"
+    else
+        # TODO: Add --debug flag 
+        echo "An error occurred while generating the certificate. Enable --debug for more detail."
+        # clean up any files that may have been created
+    fi
+    # create the pem file for use with azure
+    cat $CERT_ROOT_DIR/key.pem > $CERT_ROOT_DIR/azure.cert.pem 
+    cat $CERT_ROOT_DIR/cert.pem >> $CERT_ROOT_DIR/azure.cert.pem 
 fi
 
-# create the pem file for use with azure
-cat $CERT_ROOT_DIR/key.pem > $CERT_ROOT_DIR/azure.cert.pem 
-cat $CERT_ROOT_DIR/cert.pem >> $CERT_ROOT_DIR/azure.cert.pem 
 
 # create the service principal
-az ad sp create-for-rbac --name ANaServicePrincipal \
-                         --role contributor \
-                         --scopes $RESOURCE_GROUP_ID \
-                         --cert @$CERT_ROOT_DIR/azure.cert.pem
+# TODO: Fix broken conditional
+SERVICE_PRINCIPAL_NAME="ANaServicePrincipal"
+echo "Creating service principal: '$SERVICE_PRINCIPAL_NAME'."
+SERVICE_PRINCIPAL_ID=$(az ad sp list --all --query "[?displayName == '$SERVICE_PRINCIPAL_NAME'].id | [0]")
+echo "Service Principal ID: '$SERVICE_PRINCIPAL_ID'"
+if [ -n "$SERVICE_PRINCIPAL_ID" ]; then
+    echo "Not null"
+else
+    echo "Null"
+fi
+echo "Should skip created: '$SKIP_CREATED'"
+
+if [ -n "$SERVICE_PRINCIPAL_ID" ]; then
+    echo 
+    echo "Here"
+    if [[ $SKIP_CREATED == 'false' ]]; then
+        echo "Error: Service principal '$SERVICE_PRINCIPAL_NAME' already exists." 
+        echo "Use the '--skip' flag to continue without re-creating the service principal or use 'ana infra destroy'"\
+             "to reset the environment." 
+        exit 1
+    fi
+else
+    az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME \
+                            --role contributor \
+                            --scopes $RESOURCE_GROUP_ID \
+                            --cert @$CERT_ROOT_DIR/azure.cert.pem
+fi 
