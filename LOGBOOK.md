@@ -4,21 +4,32 @@
 Create a language model which can be prompted with a specific topic (e.g machine learning) and will return a tweet length response about the topic
 
 ## Timeline
-### 2023-05-06 07:58 EST: [Kadeem] Automating Infrastrcture Management - Setup
+### Entry #6 || 2023-05-14 07:07 EST: [Kadeem] Representing N-Grams Efficiently
+As highlighted in entry #4, the primary factor hindering the model's current performance is the restriction on the maximum ngram size allowed. This limitation arises from the representation of ngram probabilities in the current model's architecture.
+
+Consider the case of a character level, trigram model, derived from a corpus of vocabulary size 26. Given the model's current implementation, a tensor of shape `(26, 26, 26)` will be used to represent the probability matrix, resulting in `((vocab_size ^ ngram_size) * 4)` bytes of memory usage. With each vector at index `[i,j]` storing the probability distribution of the next token after tokens `i` and `j` in the vocabulary.
+
+We need a model architecture that allows the ngram size to increase without resulting in a corresponding increase in memory consumption. The following outlines my initial thoughts on how to approach this:
+1. Represent each ngram using bag of words representation 
+2. Create a deep neural network (simple perceptron) that accepts the BoW ngram as input 
+3. Train the model on the training set to predict the next likely token given an ngram
+4. Determine and apply an evaluation metric for generated text ensuring that overfitting does not occur
+
+### Entry #5 || 2023-05-06 07:58 EST: [Kadeem] Automating Infrastrcture Management - Setup
 Taking a step away from modeling to automate the provisioning of infrastrcture in Azure. Hopes are that this will make it easy to experiment with different resources as the project goes through different iterations or to just get a clean slate whenever one is needed. The az command has been a godsend and I'm interested to continue learning and using it more.
 
-### 2023-04-29 01:09 EST: [Kadeem] Initial NGram Model
+### Entry #4 || 2023-04-29 01:09 EST: [Kadeem] Initial NGram Model
 Lost a few logbook entries due to carelessness, however, I've successfully created the initial version of the ngram model. This implementation is inefficient though, especially with regards to memory, as it requires a tensor of VOCABULARY_SIZE ^ NGRAM_SIZE to store the ngram probabilities. In addition to some refactoring, documentation and general cleanup this will be addressed.
 
-### 2023-03-19 17:08 EST: [Kadeem] Automating common workflows
+### Entry #3 || 2023-03-19 17:08 EST: [Kadeem] Automating common workflows
 For over 3 weeks I've been working on automating the workflows for the project. Initially this was in the form of several scripts stored alongside the components they operated on almost in a package by feature style (e.g storing scripts for building and starting the api along with the source for the api itself). Over time I found it better to just move everything to a central directory accessed using a singular script with branching commands (think docker cli). Need to return to working on the model, so will target completing the scripts and cleaning up the directory in the next few days
 
-### 2023-03-04 07:29 EST: [Kadeem] Implementing CI Workflow - Build Agent Container
+### Entry #2 || 2023-03-04 07:29 EST: [Kadeem] Implementing CI Workflow - Build Agent Container
 Taking steps toward automating the application deployment after the first manual deployment, starting out with a simple build container. Should go a long way towards preventing build errors that would occur if it was built locally without the cost of provisioning a build server.
 
 Using this time as well to establish some overall 'best' practices so that it's easier to track the application development over time. Ultimately the goal here is to create a comprehensive history of changes to the application with appropriate detail and justification (or at least the though process that went into it).
 
-### 2023-02-20 18:57 EST: [Kadeem] Setting up project in Azure
+### Entry #1 || 2023-02-20 18:57 EST: [Kadeem] Setting up project in Azure
 Got a dead simple version of the application running end to end in Azure. It's a simple character level bigram model so performance isn't great but it's a fun start. UI is even simpler with just a button to send an HTTP request to a REST API wrapping the model. 
 
 Considerations for next steps:
