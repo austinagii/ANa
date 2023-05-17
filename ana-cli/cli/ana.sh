@@ -4,6 +4,9 @@
 SCRIPT_DIR=$(dirname $(realpath $0))
 source $SCRIPT_DIR/.anarc
 
+# Load the feature flags
+load_feature_flags
+
 USAGE_MSG=$(cat <<-END
  
 Usage: ana [options] <command> 
@@ -21,7 +24,23 @@ Agent commands:
 Component management commands:
     build       Build an image of a component from its dockerfile
                 Example: ana build api 
-    
+END
+)
+
+# Only show the 'doctor' command if the feature is enabled
+if [ $FEATURE_ANA_DOCTOR_ENABLED == 'true' ]; then
+    USAGE_MSG=$(cat <<-END
+    $USAGE_MSG
+
+    doctor      Identify potential issues with the tooling of current shell environment
+                Example: ana doctor
+END
+)
+fi
+
+USAGE_MSG=$(cat <<-END
+$USAGE_MSG
+
     deploy      Deploy an image of a component to a target environment
                 Example: ana deploy api 1.0.0
 
@@ -75,6 +94,15 @@ case $COMMAND in
     deploy)
         bash $SCRIPT_DIR/deploy.sh "$@"
         ;;
+    doctor)
+        # TODO: Avoid duplicating error messsage here and in default case
+        if [ $FEATURE_ANA_DOCTOR_ENABLED == "false" ]; then
+            echo "ana '$COMMAND' is not a recognized command" >/dev/stderr
+            echo "See 'ana --help' for a list of available commands" >/dev/stderr
+            exit 1
+        fi
+        bash $SCRIPT_DIR/doctor.sh "$@"
+        ;;
     push)
         bash $SCRIPT_DIR/push.sh "$@"
         ;;
@@ -92,7 +120,8 @@ case $COMMAND in
         bash $SCRIPT_DIR/infra/infra.sh "$@"
         ;;
     *)
-        echo "ana '$COMMAND' is not a recognized command"
-        echo "See 'ana --help' for a list of available commands"
+        echo "ana '$COMMAND' is not a recognized command" >/dev/stderr
+        echo "See 'ana --help' for a list of available commands" >/dev/stderr
+        exit 1
         ;;
 esac
