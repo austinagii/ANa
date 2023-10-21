@@ -1,7 +1,0 @@
-# ignore all hidden files by default
-.*
-
-# do not ignore these files
-!.gitignore
-!.python-version
-!.env.template

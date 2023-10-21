@@ -1,3 +1,3 @@
 # ANa
 
-A(rgo) Na(vis) is a language model that generates short text about a prompted topic
+A(rgo) Na(vis) is an experimental autonomous agent which can be prompted with a task and execute it
