@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 USAGE_MSG=$(cat <<-END
 
 Usage: ana infra [options] <command>

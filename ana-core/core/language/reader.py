@@ -3,7 +3,6 @@ from typing import Generator
 
 from core.language.coretypes import Token
 
-
 class NGramReader:
     """Reads ngrams from a sequence of tokens"""
     def __init__(self, ngram_size: int = 2):

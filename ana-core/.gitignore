@@ -1,3 +1,18 @@
 !.gitignore
 data/**/*.*
 !data/**/.gitkeep
+
+
+# Ignore everything in the build directory
+sentiment-api/build/*
+
+# Ignore scratch files.
+**/scratch*
+
+# Ignore everything in the artifacts directory except the .gitkeep file
+artifacts/*  
+!artifacts/.gitkeep
+
+# Ignore everything in the build directory except the .gitkeep file
+build/*
+!build/.gitkeep
