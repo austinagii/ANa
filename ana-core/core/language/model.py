@@ -1,8 +1,6 @@
 import torch 
 import datasets
 
-import sentpy.preprocessing as prep 
-
 class Model(torch.nn.Module):
     def __init__(self, vocab_size: int, n_classes: int):
         super().__init__()
