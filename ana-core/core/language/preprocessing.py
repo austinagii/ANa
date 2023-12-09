@@ -7,10 +7,11 @@ import torch
 from .coretypes import Token, TokenId
 
 class Tokenizer:
-    def tokenize(self, text: str) -> Generator[str, None, None]:
+    def tokenize(self, text: str, as_seq: bool = False) -> Generator[str, None, None]:
         if not isinstance(text, str):
             raise TypeError(f"Argument 'text' expects a string, but received {type(text).__name__} instead")
-        return [token for token in text.split()]
+        tokens = (token for token in text.split())
+        return tokens if as_seq else list(tokens)
 
 
 class Codec:
@@ -43,7 +44,7 @@ class Codec:
     def vocab_size(self):
         return len(self._vocab)
 
-
+    
 def to_batches(dataset: datasets.Dataset, batch_size: int = 32) -> Generator[datasets.Dataset, None, None]:
     for i in range(0, len(dataset), batch_size):
         batch = dataset[i:i+batch_size]
