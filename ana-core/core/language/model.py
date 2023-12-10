@@ -1,6 +1,8 @@
 import torch 
 import datasets
 
+from core.language.preprocessing import Tokenizer
+
 class Model(torch.nn.Module):
     def __init__(self, vocab_size: int, n_classes: int):
         super().__init__()
@@ -14,7 +16,7 @@ class Model(torch.nn.Module):
 
 def train(model: torch.nn.Module, 
           dataset: datasets.Dataset, 
-          tokenizer: prep.Tokenizer,
+          tokenizer: Tokenizer,
           optimizer: torch.optim.Optimizer,
           device: torch.device,
           batch_size: int = 32):
@@ -33,7 +35,7 @@ def train(model: torch.nn.Module,
 
 def eval(model: torch.nn.Module, 
          dataset: datasets.Dataset, 
-         tokenizer: prep.Tokenizer,
+         tokenizer: Tokenizer,
          device: torch.device,
          batch_size: int = 32):
     total_loss = 0

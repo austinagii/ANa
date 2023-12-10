@@ -7,17 +7,40 @@ import torch
 from .coretypes import Token, TokenId
 
 class Tokenizer:
-    def tokenize(self, text: str, as_seq: bool = False) -> Generator[str, None, None]:
+    def __init__(self, lazy: str = False):
+        self.lazy = lazy 
+
+    def tokenize(
+        self, 
+        text: str | Iterable[str],
+    ) ->  list[Token] | Generator[Token, None, None] | Iterable[Generator[Token, None, None]]:
         if not isinstance(text, str):
-            raise TypeError(f"Argument 'text' expects a string, but received {type(text).__name__} instead")
+            raise TypeError(f"Argument 'text' expects a string, but received '{type(text).__name__}' instead.")
+
         tokens = (token for token in text.split())
-        return tokens if as_seq else list(tokens)
+        return tokens if self.lazy else list(tokens)
+
+    def tokenize_all(self, texts: list[str], flatten=False):
+        if not isinstance(texts, list):
+            raise TypeError(f"Argument 'texts' expects a list, but received '{type(text).__name__}' instead.")
+
+        for ix, text in enumerate(texts):
+            if not isinstance(text, str):
+                raise TypeError(f"All elements in 'texts' must be strings, but receieved '{type(text).__name__}' at index '{ix}'.")
+
+        if flatten:
+            token_seq = (token for text in texts for token in self.tokenize(text))
+            return token_seq if self.lazy else list(token_seq)
+        else:
+            token_seqs = ((token for token in self.tokenize(text)) for text in texts)
+            return token_seqs if self.lazy else [list(token_seq) for token_seq in token_seqs]
 
 
 class Codec:
     UNKNOWN_TOKEN = "UNK"
 
     def __init__(self, tokens: Iterable[Token]):
+        # TODO: Add type checking.
         self._vocab = set([Codec.UNKNOWN_TOKEN])
         for token in tokens:
             self._vocab.add(token)
@@ -44,7 +67,7 @@ class Codec:
     def vocab_size(self):
         return len(self._vocab)
 
-    
+
 def to_batches(dataset: datasets.Dataset, batch_size: int = 32) -> Generator[datasets.Dataset, None, None]:
     for i in range(0, len(dataset), batch_size):
         batch = dataset[i:i+batch_size]

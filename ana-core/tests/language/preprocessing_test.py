@@ -3,10 +3,15 @@ import pytest
 from core.language import preprocessing as pp 
 from core.language import coretypes as types 
 
+# TODO: Add more test cases for lazy tokenizer.
 class TestTokenizer:
     @pytest.fixture
     def tokenizer(self):
         return pp.Tokenizer()
+
+    @pytest.fixture
+    def lazy_tokenizer(self):
+        return pp.Tokenizer(lazy=True)
 
     def test_correctly_tokenizes_text_into_words(self, tokenizer):
         assert tokenizer.tokenize("Test") == ["Test"]
@@ -24,6 +29,17 @@ class TestTokenizer:
         with pytest.raises(TypeError):
             tokenizer.tokenize(24) 
 
+    def test_correctly_tokenizes_iterable_of_strings(self, tokenizer, lazy_tokenizer):
+        input_ = ["This is a", "list of strings"]
+        expected_output = [["This", "is", "a"], ["list", "of", "strings"]]
+        assert tokenizer.tokenize_all(input_) == expected_output
+
+        actual_output = lazy_tokenizer.tokenize_all(input_)
+        for actual_outer, expected_outer in zip(actual_output, expected_output):
+            for actual, expected in zip(actual_outer, expected_outer):
+                assert actual == expected
+
+        assert tokenizer.tokenize_all(input_, flatten=True) == ["This", "is", "a", "list", "of", "strings"]
 
 class TestCodec:
     @pytest.fixture
@@ -54,4 +70,4 @@ class TestCodec:
 
         assert isinstance(results, list)
         for item in results:
-            assert isinstance(item, types.TokenId)
+           assert isinstance(item, types.TokenId)
