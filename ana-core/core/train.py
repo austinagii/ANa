@@ -5,20 +5,19 @@ import datasets
 import torch
 from torch.optim import SGD
 
-from language.preprocessing import Tokenizer
+from language.preprocessing import Tokenizer, Codec
 from language.model import Model, train, eval
 from core import utils
 
 
 if __name__ == '__main__':
-    # torch.set_num_threads(1)
     dataset = datasets.load_dataset("emotion")
     train_dataset, validation_dataset = dataset['train'], dataset['validation']
-    tokenizer = Tokenizer(dataset['train'])
+    tokenizer = Tokenizer()
+    codec = Codec(Tokenizer(lazy=True).tokenize_all(dataset['train']['text'], flatten=True))
     n_classes = 6
-    # device = utils.get_available_device()
-    device = torch.device('cpu')
-    model = Model(tokenizer.vocab_size, n_classes).to(device)
+    device = utils.get_available_device()
+    model = Model(codec.vocab_size, n_classes).to(device)
     optimizer = SGD(model.parameters(), lr=0.01)
 
     print(f"Model initalized, starting training on '{device}'...\n")
@@ -30,8 +29,8 @@ if __name__ == '__main__':
     while iterations_without_improvement < 3:
         with utils.Timer() as epoch_timer:
             epoch += 1
-            total_train_loss, avg_train_loss = train(model, train_dataset, tokenizer, optimizer, device, batch_size)
-            total_val_loss, avg_val_loss = eval(model, validation_dataset, tokenizer, device, batch_size)
+            total_train_loss, avg_train_loss = train(model, train_dataset, tokenizer, codec, optimizer, device, batch_size)
+            total_val_loss, avg_val_loss = eval(model, validation_dataset, tokenizer, codec, device, batch_size)
             if total_val_loss < min_val_loss - stopping_criterion:
                 min_val_loss = total_val_loss
                 iterations_without_improvement = 0

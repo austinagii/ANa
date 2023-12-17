@@ -71,3 +71,12 @@ class TestCodec:
         assert isinstance(results, list)
         for item in results:
            assert isinstance(item, types.TokenId)
+
+    def test_encoding_all_tokens_in_a_nested_list_produces_a_nested_list_of_token_ids(self, codec):
+        results = codec.encode_all([["This", "is", "a", "test"], ["a", "test", "this", "is"]])
+
+        assert isinstance(results, list)
+        for result in results:
+            assert isinstance(result, list)
+            for item in result:
+               assert isinstance(item, types.TokenId)

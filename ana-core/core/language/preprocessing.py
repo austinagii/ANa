@@ -51,7 +51,16 @@ class Codec:
         return self._id_by_token[(token if token in self.vocab else Codec.UNKNOWN_TOKEN)]
 
     def encode_all(self, tokens: Iterable[Token]) -> list[TokenId]:
-        return [self.encode(token) for token in tokens]
+        encoded = []
+        for item in tokens:
+            if isinstance(item, Token):
+                encoded.append(self.encode(item))
+            elif isinstance(item, Iterable):
+                encoded.append(self.encode_all(item))
+            else:
+                raise TypeError("Invalid type")
+        return encoded
+
 
     def decode(self, token_id: TokenId) -> Token:
         pass
@@ -75,14 +84,12 @@ def to_batches(dataset: datasets.Dataset, batch_size: int = 32) -> Generator[dat
             continue
         yield batch['text'], batch['label']
 
-def to_bow(encoded_documents: list[list[int]], 
-           tokenizer: Tokenizer,
-           codec: Codec) -> torch.Tensor:
+def to_bow(encoded_documents: list[list[int]], vocab_size: int) -> torch.Tensor:
     """Converts a list of encoded documents into a tensor.
 
     The shape of the tensor is (num_documents, vocab_size).
     """
-    bow = torch.zeros(len(encoded_documents), codec.vocab_size)
+    bow = torch.zeros(len(encoded_documents), vocab_size)
     for i, encoded_document in enumerate(encoded_documents):
         bow[i, encoded_document] = 1 
     return bow

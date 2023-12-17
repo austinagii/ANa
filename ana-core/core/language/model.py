@@ -1,7 +1,9 @@
 import torch 
 import datasets
 
-from core.language.preprocessing import Tokenizer
+from language.preprocessing import Tokenizer, Codec
+import language.preprocessing as prep
+
 
 class Model(torch.nn.Module):
     def __init__(self, vocab_size: int, n_classes: int):
@@ -17,12 +19,13 @@ class Model(torch.nn.Module):
 def train(model: torch.nn.Module, 
           dataset: datasets.Dataset, 
           tokenizer: Tokenizer,
+          codec: Codec,
           optimizer: torch.optim.Optimizer,
           device: torch.device,
           batch_size: int = 32):
     total_loss = 0
     for batch_no, (inputs, labels) in enumerate(prep.to_batches(dataset, batch_size=batch_size), start=1):
-        X = prep.to_bow(tokenizer.tokenize(inputs), tokenizer.vocab_size).to(device)
+        X = prep.to_bow(codec.encode_all(tokenizer.tokenize_all(inputs)), codec.vocab_size).to(device)
         y = torch.tensor(labels, dtype=torch.long).to(device)
         optimizer.zero_grad()
         logits = model(X)
@@ -36,11 +39,12 @@ def train(model: torch.nn.Module,
 def eval(model: torch.nn.Module, 
          dataset: datasets.Dataset, 
          tokenizer: Tokenizer,
+         codec: Codec,
          device: torch.device,
          batch_size: int = 32):
     total_loss = 0
     for batch_no, (inputs, labels) in enumerate(prep.to_batches(dataset, batch_size=batch_size), start=1):
-        X = prep.to_bow(tokenizer.tokenize(inputs), tokenizer.vocab_size).to(device)
+        X = prep.to_bow(codec.encode_all(tokenizer.tokenize_all(inputs)), codec.vocab_size).to(device)
         y = torch.tensor(labels, dtype=torch.long).to(device)
         with torch.no_grad():
             logits = model(X)
