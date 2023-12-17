@@ -60,15 +60,15 @@ IMAGE_EXISTS=$(docker image inspect $IMAGE_NAME >/dev/null 2>&1; echo $?)
 
 # TODO: Log any failures in this script to a file.
 if [ $IMAGE_EXISTS -eq 0 ] && [ $SHOULD_REBUILD -eq 0 ]; then 
-  docker image rm $IMAGE_NAME >/dev/null 2>&1
   docker container rm $CONTAINER_NAME >/dev/null 2>&1
+  docker image rm $IMAGE_NAME >/dev/null 2>&1
   IMAGE_EXISTS=1
 fi
 
 if [ $IMAGE_EXISTS -eq 1 ]; then
   docker build \
     -t $USERNAME/$PROJECT_NAME-$COMPONENT-devcontainer:latest \
-    --file $CORE_ROOT_DIR/dev.dockerfile $CORE_ROOT_DIR >/dev/null 2>&1
+    --file $CORE_ROOT_DIR/dev.dockerfile $CORE_ROOT_DIR 
 fi
 
 # TODO: Check if the container is already running.

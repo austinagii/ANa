@@ -5,9 +5,9 @@ import datasets
 import torch
 from torch.optim import SGD
 
-from sentpy.preprocessing import Tokenizer
-from sentpy.model import Model, train, eval
-from sentpy import utils
+from language.preprocessing import Tokenizer
+from language.model import Model, train, eval
+from core import utils
 
 
 if __name__ == '__main__':

@@ -11,6 +11,6 @@ COPY . .
 
 ENV PYTHONPATH=/ana-core
 
-# RUN pipenv sync --dev
+RUN pipenv sync --dev
 
 ENTRYPOINT ["/usr/bin/env", "sh"] 
