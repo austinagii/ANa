@@ -21,6 +21,9 @@ alias puppis="cd $UI_ROOT_DIR"
 alias carina="cd $API_ROOT_DIR"
 alias argo="cd $ROOT_DIR"
 
+export USERNAME=austinagi
+export PROJECT_NAME=ana
+
 # Utility functions 
 # Show a usage message if no arguments are passed
 exitWithMessageIfNoArgs() {

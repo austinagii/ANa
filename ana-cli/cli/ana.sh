@@ -41,6 +41,9 @@ fi
 USAGE_MSG=$(cat <<-END
 $USAGE_MSG
 
+    dev         Start a devcontainer for the specified component 
+                Example: ana dev core 
+
     deploy      Deploy an image of a component to a target environment
                 Example: ana deploy api 1.0.0
 
@@ -91,6 +94,9 @@ case $COMMAND in
     chat)
         bash $SCRIPT_DIR/chat.sh "$@"
         ;;
+    dev)
+      bash $SCRIPT_DIR/dev.sh "$@"
+      ;;
     deploy)
         bash $SCRIPT_DIR/deploy.sh "$@"
         ;;

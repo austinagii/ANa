@@ -4,20 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-numpy = "~=1.23"
 torch = "~=2.1"
-pandas = "~=2.0"
-featuretoggles = "~=1.0"
-nltk = "~=3.8"
-tokenizer = "~=3.4"
-grpcio = "~=1.54"
-grpcio-tools = "~=1.54"
-pillow = "~=9.5"
 datasets = "~=2.15"
 
 [dev-packages]
-jupyterlab = "*"
-pytest = "~=7.3"
 
 [requires]
 python_version = "3.10"
