@@ -65,13 +65,6 @@ while true; do
     esac
 done
 
-# TODO: Move CONFIG_DIR variable to main .anarc file since it will be useful for other commands
-CONFIG_DIR=$ROOT_DIR/config
-# TODO: Move following variables to infra command to avoid duplication in setup and destroy scripts
-INFRA_CONFIG_ROOT_DIR=$CONFIG_DIR/infrastructure
-SECURITY_CONFIG_ROOT_DIR=$CONFIG_DIR/security
-CERT_ROOT_DIR=$SECURITY_CONFIG_ROOT_DIR/certs
-
 # Load the infrastructure config
 source $INFRA_CONFIG_ROOT_DIR/azure.config
 
