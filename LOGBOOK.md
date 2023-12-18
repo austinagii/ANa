@@ -1,9 +1,29 @@
 # ANa Logbook
 
 ## Goal 
-Create a language model which can be prompted with a specific topic (e.g machine learning) and will return a tweet length response about the topic
+Develop an autonomous agent that can interpret tasks described in natural language and autonomously plan and execute these tasks effectively
 
 ## Timeline
+---
+### Entry #7 [2023-12-18 19:36] Automating Virtual Machine Setup For Model Traning
+#### Progress
+- Refactored the 'setup' script to improve readability and added additional error handling
+- Automated the creation of management groups during setup 
+
+#### Challenges
+- Azure CLI has a bit of a learning curve but not too bad, suspect the hardest part will be configuring the VM for model training inside docker container
+
+#### Next Steps
+- Automate the creation of the resource groups and assign them to the managment group
+- Automate the creation of the virtual machine 
+- Continue to improve the setup script
+
+#### Technical Notes & Reflections
+Need to make a note of all of the azure client extensions that I installed to execute the commands in the scripts. I also wonder if my heredoc approach in the script should be changed, I had to use a combination of tabs and spaces to get it looking how I wanted but I fear it's brittle and prone to 'accidental' formatting errors.
+
+NOTE: I'll need to update the previous changelog entries to keep them consistent, going forward any updates to the format will be reflected in the logbook.
+
+---
 ### Entry #6 || 2023-05-14 07:07 EST: [Kadeem] Representing N-Grams Efficiently
 As highlighted in entry #4, the primary factor hindering the model's current performance is the restriction on the maximum ngram size allowed. This limitation arises from the representation of ngram probabilities in the current model's architecture.
 
