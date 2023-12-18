@@ -2,25 +2,31 @@
 
 load_feature_flags
 
-# TODO: Find a cleaner way to do this, minimizing the number of times the echo command is used
-#       This will be painful if we want to toggle writing to standard error instead of standard out
 function show_usage() {
-    echo 
-    echo "Usage: ana infra setup [options]"
-    echo 
-    echo "Provision the Azure infrastructure required to run ANa"
-    echo 
-    echo "Options:"
-    echo "    -h, --help      Show this message"
-    echo "    -l, --login     Request login with Azure CLI even if already logged in. Note that this may be required"
-    echo "                    if you are not logged in with an id that allows you to create or manage resource groups"
-    echo "                    and service principals"
-    if [[ $FEATURE_INFRA_SKIP_CREATED == true ]]; then
-    echo "    -s, --skip      Do not create resources if they already exist. Note that if these resources are not"
-    echo "                    configured properly specifying this option can lead to undefined behavior"
-    fi
-    echo
+  USAGE_MSG=$(cat <<-END
 
+		Usage: ana infra setup [options]
+
+		Provision the Azure infrastructure required to run ANa
+		
+		Options:
+		  -h, --help      Show this message
+		  -l, --login     Request login with Azure CLI even if already logged in. Note that this may be required
+		                  if you are not logged in with an id that allows you to create or manage resource groups
+		                  and service principals
+	END
+	)
+
+  if [[ $FEATURE_INFRA_SKIP_CREATED == true ]]; then
+		USAGE_MSG=$(cat <<-END
+			$USAGE_MSG
+			  -s, --skip      Do not create resources if they already exist. Note that if these resources are not
+			                  configured properly specifying this option can lead to undefined behavior
+		END
+		)
+  fi
+
+	echo "$USAGE_MSG"
 }
 
 # Parse the command line options
@@ -35,10 +41,8 @@ PARSED_ARGS=$(getopt -n "setup" -o $SHORT_OPTIONS -l $LONG_OPTIONS -- "$@")
 eval set -- "$PARSED_ARGS"
 
 # intialize option variables to default values
-LOGIN=false
-if [[ $FEATURE_INFRA_SKIP_CREATED == true ]]; then
-    SKIP_CREATED=false
-fi
+LOGIN=1
+SKIP_CREATED=1
 
 while true; do
     case $1 in
@@ -47,18 +51,18 @@ while true; do
             exit 0
             ;;
         -l|--login)
-            LOGIN=true
+            LOGIN=0
             shift 1
             ;;
         -s|--skip)
-            SKIP_CREATED=true
+            SKIP_CREATED=0
             shift 1
             ;;
         --)
             COMMAND=$2
             break
             ;;
-        *)
+       *)
             echo "Unrecognized option '$1'. See 'ana infra setup --help' for a list of valid options"
             exit 1
             ;;
@@ -69,17 +73,48 @@ done
 source $INFRA_CONFIG_ROOT_DIR/azure.config
 
 # Only login if not already logged in or --login flag is specified 
-if az account show &> /dev/null && ! $LOGIN; then
-    echo "User already logged in"
-else
-    # TODO: Set timeout on authentication
+IS_ACCOUNT_LOGGED_IN=$(az account show &>/dev/null; echo $?)
+if [ $IS_ACCOUNT_LOGGED_IN -ne 0 ] || [ $LOGIN -eq 0 ]; then
     az login &>/dev/null
     if [ $? -ne 0 ]; then
         echo "Failed to authenticate"
         exit 1
     fi
     echo "Authenticated successfully."
+else
+    echo "User already logged in."
 fi
+# Create the management group if it does not already exist.
+echo "Checking for management group '$MANAGEMENT_GROUP_NAME'."
+MANAGEMENT_GROUPS_EXISTS=$([ -n $(az account management-group list --query "[?name=='$MANAGEMENT_GROUP_NAME'].id" -o tsv) ]; echo $?)
+if [ $MANAGEMENT_GROUPS_EXISTS -ne 0 ]; then
+  echo "Management group '$MANAGEMENT_GROUP_NAME' could not be found. The group will be created."
+  az account management-group create --name $MANAGEMENT_GROUPS_NAME &>/dev/null
+  if [ $? -eq 0 ]; then
+    echo "Management group '$MANAGEMENT_GROUP_NAME' was created successfully."
+  else
+    echo "Error: Failed to create management group '$MANAGEMENT_GROUP_NAME'."
+  fi
+else
+  echo "Found management group '$MANAGEMENT_GROUP_NAME'." 
+fi
+exit 0
+
+echo "Checking for resource group '$RESOURCE_GROUP_NAME'."
+RESOURCE_GROUP_EXISTS=$([ -n $(az account management-group list --query "[?name=='$MANAGEMENT_GROUP_NAME'].id" -o tsv) ]; echo $?)
+if [ $MANAGEMENT_GROUPS_EXISTS -ne 0 ]; then
+  echo "Management group '$MANAGEMENT_GROUP_NAME' could not be found. The group will be created."
+  az account management-group create --name $MANAGEMENT_GROUPS_NAME &>/dev/null
+  if [ $? -eq 0 ]; then
+    echo "Management group '$MANAGEMENT_GROUP_NAME' was created successfully."
+  else
+    echo "Error: Failed to create management group '$MANAGEMENT_GROUP_NAME'."
+  fi
+else
+  echo "Found management group '$MANAGEMENT_GROUP_NAME'." 
+fi
+exit 0
+
 
 # Use the authenticated user account to create the resource groups and service principals for those groups
 SUBSCRIPTION_ID=$(az account list --query "[?name == '$SUBSCRIPTION_NAME'].id" | jq -r '.[0]')
@@ -170,3 +205,11 @@ else
                             --scopes $RESOURCE_GROUP_ID \
                             --cert @$CERT_ROOT_DIR/azure.cert.pem
 fi 
+
+VM_ID="$(az vm list --resource-group $RESOURCE_GROUP_NAME --query "[?name=='$VM_NAME'].id" -o tsv)"
+if [ -z $VM_ID ]; then 
+  # Create the VM.
+fi
+
+
+
