@@ -16,7 +16,7 @@ Options:
 END
 )
 
-exitWithMessageIfNoArgs $@ "$USAGE_MSG"
+# exitWithMessageIfNoArgs $@ "$USAGE_MSG"
 
 PARSED_ARGS=$(getopt -o hl -l help,login -- "$@")
 eval set -- "$PARSED_ARGS"
