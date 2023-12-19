@@ -19,12 +19,8 @@ END
 )
 
 # Parse the command line options
-SHORT_OPTIONS=hl
-LONG_OPTIONS=help,login
-if [[ $FEATURE_INFRA_SKIP_CREATED == true ]]; then
-    SHORT_OPTIONS="$SHORT_OPTIONS""s"
-    LONG_OPTIONS="$LONG_OPTIONS"",skip"
-fi
+SHORT_OPTIONS=hls
+LONG_OPTIONS=help,login,skip
 # TODO: Do not use getopt error message
 PARSED_ARGS=$(getopt -n "setup" -o $SHORT_OPTIONS -l $LONG_OPTIONS -- "$@")
 eval set -- "$PARSED_ARGS"
