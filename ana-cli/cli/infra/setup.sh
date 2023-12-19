@@ -2,32 +2,21 @@
 
 load_feature_flags
 
-function show_usage() {
-  USAGE_MSG=$(cat <<-END
+USAGE_MSG=$(cat <<-END
 
-		Usage: ana infra setup [options]
+Usage: ana infra setup [options]
 
-		Provision the Azure infrastructure required to run ANa
+Provision the Azure infrastructure required to run ANa
 		
-		Options:
-		  -h, --help      Show this message
-		  -l, --login     Request login with Azure CLI even if already logged in. Note that this may be required
-		                  if you are not logged in with an id that allows you to create or manage resource groups
-		                  and service principals
-	END
-	)
-
-  if [[ $FEATURE_INFRA_SKIP_CREATED == true ]]; then
-		USAGE_MSG=$(cat <<-END
-			$USAGE_MSG
-			  -s, --skip      Do not create resources if they already exist. Note that if these resources are not
-			                  configured properly specifying this option can lead to undefined behavior
-		END
-		)
-  fi
-
-	echo "$USAGE_MSG"
-}
+Options:
+  -h, --help      Show this message
+  -l, --login     Request login with Azure CLI even if already logged in. Note that this may be required
+                  if you are not logged in with an id that allows you to create or manage resource groups
+                  and service principals
+  -s, --skip      Do not create resources if they already exist. Note that if these resources are not
+                  configured properly specifying this option can lead to undefined behavior
+END
+)
 
 # Parse the command line options
 SHORT_OPTIONS=hl
@@ -47,7 +36,7 @@ SKIP_CREATED=1
 while true; do
     case $1 in
         -h|--help)
-            show_usage
+            echo "$USAGE_MSG" 
             exit 0
             ;;
         -l|--login)
