@@ -1,7 +1,5 @@
 #!/bin/sh
 
-load_feature_flags
-
 USAGE_MSG=$(cat <<-END
 
 Usage: ana infra setup [options]
@@ -69,6 +67,7 @@ if [ $IS_ACCOUNT_LOGGED_IN -ne 0 ] || [ $LOGIN -eq 0 ]; then
 else
     echo "User already logged in."
 fi
+
 # Create the management group if it does not already exist.
 echo "Checking for management group '$MANAGEMENT_GROUP_NAME'."
 MANAGEMENT_GROUPS_EXISTS=$([ -n $(az account management-group list --query "[?name=='$MANAGEMENT_GROUP_NAME'].id" -o tsv) ]; echo $?)
@@ -83,32 +82,22 @@ if [ $MANAGEMENT_GROUPS_EXISTS -ne 0 ]; then
 else
   echo "Found management group '$MANAGEMENT_GROUP_NAME'." 
 fi
-exit 0
 
-echo "Checking for resource group '$RESOURCE_GROUP_NAME'."
-RESOURCE_GROUP_EXISTS=$([ -n $(az account management-group list --query "[?name=='$MANAGEMENT_GROUP_NAME'].id" -o tsv) ]; echo $?)
-if [ $MANAGEMENT_GROUPS_EXISTS -ne 0 ]; then
-  echo "Management group '$MANAGEMENT_GROUP_NAME' could not be found. The group will be created."
-  az account management-group create --name $MANAGEMENT_GROUPS_NAME &>/dev/null
-  if [ $? -eq 0 ]; then
-    echo "Management group '$MANAGEMENT_GROUP_NAME' was created successfully."
-  else
-    echo "Error: Failed to create management group '$MANAGEMENT_GROUP_NAME'."
-  fi
-else
-  echo "Found management group '$MANAGEMENT_GROUP_NAME'." 
-fi
-exit 0
-
-
-# Use the authenticated user account to create the resource groups and service principals for those groups
-SUBSCRIPTION_ID=$(az account list --query "[?name == '$SUBSCRIPTION_NAME'].id" | jq -r '.[0]')
+# Ensure the provided subscription group exists. 
+SUBSCRIPTION_ID=$(az account list --query "[?name == '$SUBSCRIPTION_NAME'].id" -o tsv)
 if [ -z SUBSCRIPTION_ID ]; then 
-    echo "Could not find subscription"
+    echo "Error: Subscription '$SUBSCRIPTION_NAME' could not be found. Exiting..."
     exit 1;
 fi
-echo "Found subscription '$SUBSCRIPTION_NAME.'"
 
+# Add the subscription to the management group.
+echo "Adding subscription '$SUBSCRIPTION_NAME' to management group '$MANAGEMENT_GROUP_NAME'."
+az account management-group subscription add --name "$MANAGEMENT_GROUP_NAME" --subscription "$SUBSCRIPTION_NAME"
+if [ $? -ne 0 ]; then 
+  echo "Error: Failed to add '$SUBSCRIPTION_NAME' to management group '$MANAGEMENT_GROUP_NAME'"
+fi
+
+# Switch to the subscription.
 az account set --subscription $SUBSCRIPTION_ID
 if [ $? -ne 0 ]; then
     echo "Could not switch to provided subscription."
