@@ -5,7 +5,7 @@ USAGE_MSG=$(cat <<-END
 Usage: ana infra setup [options]
 
 Provision the Azure infrastructure required to run ANa
-		
+
 Options:
   -h, --help      Show this message
   -l, --login     Request login with Azure CLI even if already logged in. Note that this may be required
@@ -25,7 +25,6 @@ eval set -- "$PARSED_ARGS"
 
 # intialize option variables to default values
 LOGIN=1
-SKIP_CREATED=1
 
 while true; do
     case $1 in
@@ -35,10 +34,6 @@ while true; do
             ;;
         -l|--login)
             LOGIN=0
-            shift 1
-            ;;
-        -s|--skip)
-            SKIP_CREATED=0
             shift 1
             ;;
         --)
@@ -55,17 +50,20 @@ done
 # Load the infrastructure config
 source $INFRA_CONFIG_ROOT_DIR/azure.config
 
-# Only login if not already logged in or --login flag is specified 
-IS_ACCOUNT_LOGGED_IN=$(az account show &>/dev/null; echo $?)
-if [ $IS_ACCOUNT_LOGGED_IN -ne 0 ] || [ $LOGIN -eq 0 ]; then
-    az login &>/dev/null
-    if [ $? -ne 0 ]; then
-        echo "Failed to authenticate"
-        exit 1
-    fi
-    echo "Authenticated successfully."
-else
-    echo "User already logged in."
+# Only login if not already logged in, the current logged in user is not the required user
+# or the 'login' flag is specified 
+echo "Checking logged in user"
+LOGGED_IN_USER=$(az account show --query "user.name" | tr -d \")
+if [ $? -ne 0 ] || [ "$LOGGED_IN_USER" != "$USER_NAME" ] || [ $LOGIN == 0 ]; then 
+  echo "Authenticating as user '$USER_NAME'"
+  az login &>/dev/null
+  if [ $? -ne 0 ]; then
+      echo "Error: failed to authenticate as user '$USER_NAME'"
+      exit 1
+  fi
+  echo "Authenticated successfully."
+else 
+  echo "User '$USER_NAME' is logged in"
 fi
 
 # Create the management group if it does not already exist.
@@ -83,19 +81,58 @@ else
   echo "Found management group '$MANAGEMENT_GROUP_NAME'." 
 fi
 
-# Ensure the provided subscription group exists. 
+# Ensure the provided subscription exists and add it to the management group.
 SUBSCRIPTION_ID=$(az account list --query "[?name == '$SUBSCRIPTION_NAME'].id" -o tsv)
-if [ -z SUBSCRIPTION_ID ]; then 
-    echo "Error: Subscription '$SUBSCRIPTION_NAME' could not be found. Exiting..."
+if [ -z $SUBSCRIPTION_ID ]; then 
+    echo "Error: Subscription '$SUBSCRIPTION_NAME' could not be found or does not exist" >&2
+    echo "Ensure that the subscription has been created before executing this script or run this command with the '--login' option to force a refresh" >&2
     exit 1;
 fi
 
-# Add the subscription to the management group.
-echo "Adding subscription '$SUBSCRIPTION_NAME' to management group '$MANAGEMENT_GROUP_NAME'."
-az account management-group subscription add --name "$MANAGEMENT_GROUP_NAME" --subscription "$SUBSCRIPTION_NAME"
-if [ $? -ne 0 ]; then 
-  echo "Error: Failed to add '$SUBSCRIPTION_NAME' to management group '$MANAGEMENT_GROUP_NAME'"
+
+# Does the service principal already exist?
+
+
+# Generate the certs for service principal authentication
+# TODO: Ensure cert config exists before attempting to create certs
+# Throw an error if the cert files exist and the --skip flag is not specified
+if [ ! -f $CERT_ROOT_DIR/cert.pem ]; then
+  rm -f $CERT_ROOT_DIR/*  # Clean up any stray certs to avoid conflicts.
+
+  echo "Generating certs now"
+  openssl req -x509 -new -newkey rsa:2048 -nodes \
+              -config $SECURITY_CONFIG_ROOT_DIR/certs.cfg \
+              -keyout $CERT_ROOT_DIR/key.pem \
+              -out $CERT_ROOT_DIR/cert.pem &>/dev/null
+
+  if [ $? -eq 0 ]; then
+    echo "Certificates generated successfully"
+  else
+    # TODO: Add --debug flag.
+    echo "An error occurred while generating the certificate. Enable --debug for more detail."
+    # TODO: Clean up any files that may have been created.
+    exit 1
+  fi
+else
+  echo "Certificates found"
 fi
+
+
+# create the service principal
+# TODO: Fix broken conditional
+echo "Creating service principal: '$SERVICE_PRINCIPAL_NAME'."
+SERVICE_PRINCIPAL_ID=$(az ad sp list --all --query "[?displayName == '$SERVICE_PRINCIPAL_NAME'].id | [0]")
+
+if [ -z "$SERVICE_PRINCIPAL_ID" ]; then
+    az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME \
+                            --role contributor \
+                            --scopes $RESOURCE_GROUP_ID \
+                            --cert @$CERT_ROOT_DIR/cert.pem
+else
+  echo "Service principal '$SERVICE_PRINCIPAL_NAME' already exists." 
+fi 
+
+az login 
 
 # Switch to the subscription.
 az account set --subscription $SUBSCRIPTION_ID
@@ -106,84 +143,37 @@ fi
 echo "Switched to subscription '$SUBSCRIPTION_NAME'"
 
 # Create the resource group if one does not already exist
-RESOURCE_GROUP_ID=$(az group list -o tsv --query "[?name == '$RESOURCE_GROUP_NAME'].id | [0]")                 
+RESOURCE_GROUP_EXISTS=$([ -n $(az group list -o tsv --query "[?name == '$RESOURCE_GROUP_NAME'].id") ]; echo $?)                 
 # Exit with an error if we are not skipping created resources
-if [ -n "$RESOURCE_GROUP_ID" ] && [[ $SKIP_CREATED == 'false' ]]; then
-    echo "Error: Resource group '$RESOURCE_GROUP_NAME' already exists." >&2
-    echo "Use the '--skip' flag to continue without re-creating the resource group or use 'ana infra destroy' to reset"\
-         "the environment." >&2
-    exit 1
-fi
-echo "Creating the resource group '$RESOURCE_GROUP_NAME'"
-RESOURCE_GROUP_ID=$(az group create --location $RESOURCE_GROUP_LOCATION --resource-group $RESOURCE_GROUP_NAME -o tsv --query "id")
-if [ $? -ne 0 ]; then
+if [ $RESOURCE_GROUP_EXISTS -ne 0 ]; then
+  echo "Creating the resource group '$RESOURCE_GROUP_NAME'"
+  RESOURCE_GROUP_ID=$(az group create --location $RESOURCE_GROUP_LOCATION --resource-group $RESOURCE_GROUP_NAME -o tsv --query "id")
+  if [ $? -ne 0 ]; then
     echo "Failed to create the resource group" >&2
     exit 1
-fi
-
-# Generate the certs for service principal authentication
-# TODO: Ensure cert config exists before attempting to create certs
-# Throw an error if the cert files exist and the --skip flag is not specified
-if [ -f $CERT_ROOT_DIR/key.pem ] || [ -f $CERT_ROOT_DIR/cert.pem ] || [ -f $CERT_ROOT_DIR/azure.cert.pem ]; then
-    if [[ $SKIP_CREATED == false ]]; then
-        echo "Error: Certificates have already been generated." >&2
-        echo "Use the '--skip' flag to continue without re-creating the certificates or use 'ana infra destroy' to reset"\
-             "the environment." >&2
-        exit 1
-    fi
+  fi
 else
-    echo "Generating certs now"
-    openssl req -x509 -new -newkey rsa:2048 -nodes \
-                -config $SECURITY_CONFIG_ROOT_DIR/certs.cfg \
-                -keyout $CERT_ROOT_DIR/key.pem \
-                -out $CERT_ROOT_DIR/cert.pem &>/dev/null
-
-    if [ $? -eq 0 ]; then
-        echo "Certificate generated successfully"
-    else
-        # TODO: Add --debug flag 
-        echo "An error occurred while generating the certificate. Enable --debug for more detail."
-        # clean up any files that may have been created
-    fi
-    # create the pem file for use with azure
-    cat $CERT_ROOT_DIR/key.pem > $CERT_ROOT_DIR/azure.cert.pem 
-    cat $CERT_ROOT_DIR/cert.pem >> $CERT_ROOT_DIR/azure.cert.pem 
+  echo "Found resource group '$RESOURCE_GROUP_NAME'." >&2
 fi
 
 
-# create the service principal
-# TODO: Fix broken conditional
-SERVICE_PRINCIPAL_NAME="ANaServicePrincipal"
-echo "Creating service principal: '$SERVICE_PRINCIPAL_NAME'."
-SERVICE_PRINCIPAL_ID=$(az ad sp list --all --query "[?displayName == '$SERVICE_PRINCIPAL_NAME'].id | [0]")
-echo "Service Principal ID: '$SERVICE_PRINCIPAL_ID'"
-if [ -n "$SERVICE_PRINCIPAL_ID" ]; then
-    echo "Not null"
-else
-    echo "Null"
-fi
-echo "Should skip created: '$SKIP_CREATED'"
-
-if [ -n "$SERVICE_PRINCIPAL_ID" ]; then
-    echo 
-    echo "Here"
-    if [[ $SKIP_CREATED == 'false' ]]; then
-        echo "Error: Service principal '$SERVICE_PRINCIPAL_NAME' already exists." 
-        echo "Use the '--skip' flag to continue without re-creating the service principal or use 'ana infra destroy'"\
-             "to reset the environment." 
-        exit 1
-    fi
-else
-    az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME \
-                            --role contributor \
-                            --scopes $RESOURCE_GROUP_ID \
-                            --cert @$CERT_ROOT_DIR/azure.cert.pem
-fi 
-
+# Create the VM.
 VM_ID="$(az vm list --resource-group $RESOURCE_GROUP_NAME --query "[?name=='$VM_NAME'].id" -o tsv)"
 if [ -z $VM_ID ]; then 
-  # Create the VM.
+  # capture the output
+  az vm create --name "ANa-Dev-VM" --resource-group "senti-lab_group" \
+               --image "Ubuntu2204" --size "Standard_NC4as_T4_v3" \
+               --security "Standard" --zone 1 --computer-name "ana-dev-vm" \
+               --generate-ssh-keys \
+               --location "eastus"  --nsg "ANa-NSG" --nsg-rule "SSH" \
+               --ssh-key-name "ANa-dev-ssh-keys" \
+               --vnet-name "ana-dev-vnet" --subnet "ana-dev-default-subnet" \
+               --public-ip-address "ana-dev-ip" --public-ip-address-allocation "dynamic" \
+               --public-ip-address-dns-name "ana-dev" --data-disk-sizes-gb 64 \
 fi
+
+ssh -o StrictHostKeyChecking=no -i $ssh_key_location $username@$vm_ip_address
+
 
 
 

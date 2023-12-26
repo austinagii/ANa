@@ -5,6 +5,24 @@ Develop an autonomous agent that can interpret tasks described in natural langua
 
 ## Timeline
 ---
+Update this entry
+### Entry #7 [2023-12-18 19:36] Automating Virtual Machine Setup For Model Traning
+#### Progress
+- Refactored the 'setup' script to improve readability and added additional error handling
+- Automated the creation of management groups during setup 
+
+#### Challenges
+- Azure CLI has a bit of a learning curve but not too bad, suspect the hardest part will be configuring the VM for model training inside docker container
+
+#### Next Steps
+- Create a README document describing the setup required in Azure to use the infra setup & teardown scripts
+
+#### Technical Notes & Reflections
+The Azure CLI doesn't allow you to create a new subscription (likely because you have to sign an agreement) so the subscription will need to exist before you can use the infrastructure setup script. P.S Not even a day went by and I messed up the formatting of the heredoc usage message in the setup script so it's been changed to be a bit easier to work with.
+
+NOTE: I'll need to update the previous changelog entries to keep them consistent, going forward any updates to the format will be reflected in the logbook.
+
+---
 ### Entry #7 [2023-12-18 19:36] Automating Virtual Machine Setup For Model Traning
 #### Progress
 - Refactored the 'setup' script to improve readability and added additional error handling
