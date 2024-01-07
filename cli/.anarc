@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+export USERNAME=austinagi
+export PROJECT_NAME=ana
+
+# The current directory
+export SCRIPT_DIR=$(dirname $(realpath $0))
+# The root directory of the project
+export ROOT_DIR=$(dirname $SCRIPT_DIR)
+# The path to the cli log directory
+export LOG_DIR=$SCRIPT_DIR/.logs
+# The path to the config directory
+export CONFIG_DIR=$ROOT_DIR/config
+# The root directory of the ANa language model
+export SRC_DIR=$ROOT_DIR/ana
+# The root directory of the ANa CLI 
+export CLI_ROOT_DIR=$ROOT_DIR/cli
+
+# Utility functions 
+# Show a usage message if no arguments are passed
+exitWithMessageIfNoArgs() {
+    if [ $# -eq 0 ]; then
+        echo "error: no exit message provided"
+        exit 1
+    elif [ $# -eq 1 ]; then
+        echo "$1"
+        exit 1
+    fi
+}
+export -f exitWithMessageIfNoArgs
+
+getConfigValue() {
+    if [ ! -f $2 ]; then
+        echo "No such file '$2'" >&2
+        exit 1
+    fi
+
+    config_value=$(awk -F "=" -v pattern="$1" '$1~pattern {print $2}' $2)
+    if [ $? -ne 0 ] || [ -z "$config_value" ]; then
+        echo "Value '$1' could not be retrieved from '$2'" > /dev/stderr
+        exit 1
+    fi
+
+    echo $config_value
+    exit 0
+}
+export -f getConfigValue

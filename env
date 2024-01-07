@@ -1,0 +1,136 @@
+#!/usr/bin/env sh
+
+USAGE_MSG=$(cat <<-END
+
+Usage: env [options]
+
+Start or connect to the local development environment 
+
+Options:
+    -s, --shell   Spawn a new shell inside the development environment
+    -h, --help    Show this message
+END
+)
+
+CURRENT_DIR=$(dirname $(realpath $0))
+SHOULD_REBUILD=1
+SHOULD_SPAWN_NEW_SHELL=1
+
+# Parse the command line arguments.
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -h|--help)
+      echo "$USAGE_MSG"
+      exit 0
+      ;;
+    -s|--shell)
+      SHOULD_SPAWN_NEW_SHELL=0  
+      shift
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Use '--help' for a list of valid options"
+      exit 1
+      ;;
+  esac
+done
+ 
+IMAGE_NAME="ana-devcontainer:latest"
+CONTAINER_NAME="ana-devcontainer"
+
+show_build_loader() {
+    spin='-\|/'
+    while kill -0 $1 2>/dev/null; do
+        for i in {1..4}; do
+            printf "\rBuilding your local development environment, this may take a few minutes ${spin:i%4:1}"
+            sleep 0.3
+        done
+    done
+    printf "\nBuild complete!\n\n"
+}
+
+check_image_exists() {
+  docker image inspect "$IMAGE_NAME" >/dev/null 2>&1
+}
+
+check_container_exists() {
+  docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1
+}
+
+get_devcontainer_file_hash() {
+  md5sum $CURRENT_DIR/dev.dockerfile | awk '{print $1}' 
+}
+
+if [ ! -f $CURRENT_DIR/.devcontainer-hash ]; then
+  SHOULD_REBUILD=0 
+elif [ -f $CURRENT_DIR/.devcontainer-hash ] && [ "$(cat $CURRENT_DIR/.devcontainer-hash)" != "$(get_devcontainer_file_hash)" ]; then
+  SHOULD_REBUILD=0
+fi
+
+if check_image_exists && [ $SHOULD_REBUILD -eq 0 ]; then
+  if check_container_exists; then
+    docker container rm --force $CONTAINER_NAME >/dev/null 2>&1 || {
+      echo "Error: Failed to remove existing container. Please try again or attempt to manually remove container" >&2
+      exit 1
+    }
+  fi
+  docker image rm --force $IMAGE_NAME >/dev/null 2>&1 || {
+    echo "Error: Failed to remove existing image. Please try again or attempt to manually remove the image" >&2
+    exit 1
+  }
+fi
+
+if ! check_image_exists; then 
+  get_devcontainer_file_hash > .devcontainer-hash
+  docker build -t $IMAGE_NAME --file $CURRENT_DIR/dev.dockerfile --no-cache $CURRENT_DIR &>$CURRENT_DIR/.devcontainer-build-log.txt 2>&1 &
+  PID=$!
+  show_build_loader $PID
+  wait $PID
+
+  if [ $? -ne 0 ]; then
+    echo "Error: Failed to build dev container image '$IMAGE_NAME'" 
+    exit 1
+  fi
+fi
+
+if ! check_container_exists; then
+  docker container run -it --name $CONTAINER_NAME --mount type=bind,src=$CURRENT_DIR,dst=/ana $IMAGE_NAME
+  EXIT_STATUS=$?
+  # Check if the container failed to start
+  if [ $EXIT_STATUS -ne 0 ] && [ $EXIT_STATUS -ne 125 ] && [ $EXIT_STATUS -ne 126 ] && [ $EXIT_STATUS -ne 127 ]; then
+      echo "Error: Failed to start dev container"
+      exit 1
+  fi
+else
+  CONTAINER_STATUS=$(docker container inspect --format '{{ .State.Status }}' $CONTAINER_NAME) || {
+    echo "Error: Could not retrieve container status"
+    exit 1
+  }
+  case $CONTAINER_STATUS in 
+    running)
+      if [ $SHOULD_SPAWN_NEW_SHELL -eq 0 ]; then
+        docker container exec -it $CONTAINER_NAME bash
+      else
+        docker container attach $CONTAINER_NAME 
+      fi
+      ;;
+    paused)
+      if [ $SHOULD_SPAWN_NEW_SHELL -eq 0 ]; then
+        docker container unpause $CONTAINER_NAME >/dev/null 2>&1 && docker container exec -it $CONTAINER_NAME bash
+      else
+        docker container unpause $CONTAINER_NAME >/dev/null 2>&1 && docker container attach $CONTAINER_NAME
+      fi
+      ;;
+    created|exited)
+      docker container start $CONTAINER_NAME >/dev/null 2>&1 && docker container attach $CONTAINER_NAME
+      ;;
+    restarting|removing|dead)
+      echo "Error: Container is in a transient state and cannot be updated at this time. Please wait and try again" >&2
+      exit 1
+      ;;
+    *)
+      echo "Error: Could not start dev container. The container is in an unrecognized state" >&2
+      exit 1
+      ;;
+  esac
+fi
