@@ -6,11 +6,6 @@ Usage: ana build [options] <component>
 
 Build an image of a component from its dockerfile
 
-Available components:
-    api     The ANa REST API
-    ui      The ANa web UI
-    core    The ANa core model
-
 Options:
     -f, --force             Forces the image to be built with the components current version number 
                             even if that image already exists
