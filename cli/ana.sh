@@ -8,33 +8,30 @@ USAGE_MSG=$(cat <<-END
  
 Usage: ana [options] <command> 
 
-A(rgo) Na(vis) is a language model that generates short text obout a prompted topic
+A(rgo) Na(vis) is an interactive agent that can be prompted with a goal and autonomously create and execute a plan to achieve that goal with appropriate human interaction
 
 Options:
     -h, --help      Show this message
     -v, --version   Show the current version number
 
 Commands:
-    chat        Start a chat with ANa
-                Example: ana chat
+    chat            Start a chat with ANa
+                    Example: ana chat
 
-    build       Build an image of a component from its dockerfile
-                Example: ana build api 
+    build           Build the docker image for the ANa agent
+                    Example: ana build  
 
-    push        Push an image of a component to dockerhub
-                Example: ana push api 1.0.0
+    start           Start the ANa agent's docker container 
+                    Example: ana start 
 
-    start       Start an instance of a component 
-                Example: ana start api 1.0.0
+    stop            Stop the ANa agent's docker container
+                    Example: ana stop 
 
-    stop        Stop a running instance of a component 
-                Example: ana stop api 1.0.0
+    train           Train the ANa language model 
+                    Example: ana train 
 
-    train       Train the ANa language model
-                Example: ana train 
-
-    serve       Serve the ANa language model
-                Example: ana train 
+    serve           Serve the ANa language model
+                    Example: ana serve 
 
 Try 'ana <command> --help' for more information on a specific commnad
 END

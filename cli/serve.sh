@@ -17,7 +17,7 @@ PARSED_ARGS=$(getopt -o h -l help --name train -- "$@") || {
   exit 1
 }
 
-cd $ROOT_DIR && pipenv run python -m ana train || {
+cd $ROOT_DIR && pipenv run python -m ana --mode serve || {
   echo "An error occurred while training the model" >&2
   exit 1
 }
