@@ -6,9 +6,10 @@ name = "pypi"
 [packages]
 torch = "~=2.1"
 datasets = "~=2.15"
+openai = "*"
 
 [dev-packages]
 pytest = "~=7.4"
 
 [requires]
-python_version = "3.10"
+python_version = "3.12"
