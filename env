@@ -58,7 +58,7 @@ check_container_exists() {
 }
 
 get_devcontainer_file_hash() {
-  md5sum $CURRENT_DIR/dev.dockerfile | awk '{print $1}' 
+  md5sum $CURRENT_DIR/dockerfile | awk '{print $1}' 
 }
 
 if [ ! -f $CURRENT_DIR/.devcontainer-hash ]; then
@@ -82,7 +82,7 @@ fi
 
 if ! check_image_exists; then 
   get_devcontainer_file_hash > .devcontainer-hash
-  docker build -t $IMAGE_NAME --file $CURRENT_DIR/dev.dockerfile --no-cache $CURRENT_DIR &>$CURRENT_DIR/.devcontainer-build-log.txt 2>&1 &
+  docker build -t $IMAGE_NAME --file $CURRENT_DIR/dockerfile --no-cache $CURRENT_DIR &>$CURRENT_DIR/.devcontainer-build-log.txt 2>&1 &
   PID=$!
   show_build_loader $PID
   wait $PID
@@ -94,7 +94,7 @@ if ! check_image_exists; then
 fi
 
 if ! check_container_exists; then
-  docker container run -it --name $CONTAINER_NAME --mount type=bind,src=$CURRENT_DIR,dst=/ana $IMAGE_NAME
+  docker container run -it --name $CONTAINER_NAME --mount type=bind,src=$CURRENT_DIR,dst=/ANa --volume /var/run/docker.sock:/var/run/docker.sock $IMAGE_NAME
   EXIT_STATUS=$?
   # Check if the container failed to start
   if [ $EXIT_STATUS -ne 0 ] && [ $EXIT_STATUS -ne 125 ] && [ $EXIT_STATUS -ne 126 ] && [ $EXIT_STATUS -ne 127 ]; then

@@ -1,13 +1,11 @@
-FROM python:3.12.4-bullseye
+FROM docker:27.0.0-rc.1-cli
 
-RUN apt update -y && apt upgrade -y
+RUN apk update && apk upgrade
 
-RUN pip install pipenv
+RUN apk add bash 
 
-WORKDIR /ANa
+WORKDIR /ANa 
 
-EXPOSE 8888
-
-ENV PYTHONPATH=/ANa/ana
+RUN ln -s /ANa/cli/ana.sh /usr/local/bin/ana
 
 CMD ["bash"]
