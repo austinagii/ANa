@@ -1,11 +1,13 @@
-FROM python:3.10.11
+FROM python:3.12.4-bullseye
 
-RUN apt update && apt upgrade
+RUN apt update -y && apt upgrade -y
 
 RUN pip install pipenv
 
-WORKDIR /ana-core
+WORKDIR /ANa
 
-COPY . .
+EXPOSE 8888
 
-ENV PYTHONPATH=/ana-core
+ENV PYTHONPATH=/ANa/ana
+
+CMD ["bash"]
