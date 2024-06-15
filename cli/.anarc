@@ -15,6 +15,8 @@ export CONFIG_DIR=$ROOT_DIR/config
 export CORE_DIR=$ROOT_DIR/core
 # The root directory of the ANa CLI 
 export CLI_DIR=$ROOT_DIR/cli
+# The root directory of the ANa Agent
+export AGENT_DIR=$ROOT_DIR/agent
 
 # Utility functions 
 # Show a usage message if no arguments are passed

@@ -1,4 +1,8 @@
 !.gitignore
+
+!.env.template
+
+# Ignore all data files
 data/**/*.*
 !data/**/.gitkeep
 

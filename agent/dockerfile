@@ -1,0 +1,15 @@
+FROM python:3.12.4-bullseye
+
+RUN apt -y update && apt -y upgrade
+RUN pip install pipenv
+
+WORKDIR /agent
+
+COPY Pipfile.lock .
+RUN pipenv sync 
+
+RUN echo "PS1='\[\e[32m\]\u@ana-agent:\w\[\e[0m\]$ '" >> /root/.bashrc
+
+ENV PYTHONPATH=/agent
+
+CMD ["pipenv", "shell"] 
