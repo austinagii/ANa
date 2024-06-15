@@ -12,9 +12,9 @@ export LOG_DIR=$SCRIPT_DIR/.logs
 # The path to the config directory
 export CONFIG_DIR=$ROOT_DIR/config
 # The root directory of the ANa language model
-export SRC_DIR=$ROOT_DIR/ana
+export CORE_DIR=$ROOT_DIR/core
 # The root directory of the ANa CLI 
-export CLI_ROOT_DIR=$ROOT_DIR/cli
+export CLI_DIR=$ROOT_DIR/cli
 
 # Utility functions 
 # Show a usage message if no arguments are passed

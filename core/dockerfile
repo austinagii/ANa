@@ -1,0 +1,13 @@
+FROM python:3.12.4-bullseye
+
+RUN apt update -y && apt upgrade -y
+RUN pip install pipenv 
+
+WORKDIR /core
+
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+ENV PYTHONPATH=/core
+
+ENTRYPOINT ["./entrypoint.sh"]

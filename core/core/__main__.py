@@ -10,9 +10,9 @@ import datasets
 import torch
 from torch.optim import SGD
 
-from ana.model import Model, train as train_model, eval as eval_model
-from ana.preprocessing import Tokenizer, Codec  
-from ana import utils
+from core.model import Model, train as train_model, eval as eval_model
+from core.preprocessing import Tokenizer, Codec  
+from core import utils
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("ANa")
@@ -72,4 +72,4 @@ if __name__ == "__main__":
     elif args.mode == 'serve':
         serve()
     else:
-        raise ValueError("Invalid mode")
+        print("No mode specified")

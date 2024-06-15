@@ -94,7 +94,10 @@ if ! check_image_exists; then
 fi
 
 if ! check_container_exists; then
-  docker container run -it --name $CONTAINER_NAME --mount type=bind,src=$CURRENT_DIR,dst=/ANa --volume /var/run/docker.sock:/var/run/docker.sock $IMAGE_NAME
+  docker container run -it --name $CONTAINER_NAME \
+    --mount type=bind,src=$CURRENT_DIR,dst=/ANa \
+    --volume /var/run/docker.sock:/var/run/docker.sock \
+    -e HOST_PATH=$CURRENT_DIR $IMAGE_NAME
   EXIT_STATUS=$?
   # Check if the container failed to start
   if [ $EXIT_STATUS -ne 0 ] && [ $EXIT_STATUS -ne 125 ] && [ $EXIT_STATUS -ne 126 ] && [ $EXIT_STATUS -ne 127 ]; then
