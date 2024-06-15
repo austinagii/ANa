@@ -10,9 +10,9 @@ import datasets
 import torch
 from torch.optim import SGD
 
-from core.model import Model, train as train_model, eval as eval_model
-from core.preprocessing import Tokenizer, Codec  
-from core import utils
+from model.model import Model, train as train_model, eval as eval_model
+from model.preprocessing import Tokenizer, Codec  
+from model import utils
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("ANa")

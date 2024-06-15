@@ -1,8 +1,8 @@
 import torch 
 import datasets
 
-from core.preprocessing import Tokenizer, Codec
-import core.preprocessing as prep
+from model.preprocessing import Tokenizer, Codec
+import model.preprocessing as prep
 
 
 class Model(torch.nn.Module):

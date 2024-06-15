@@ -18,11 +18,11 @@ PARSED_ARGS=$(getopt -o h -l help --name train -- "$@") || {
   exit 1
 }
 
-docker image build -t ana-core -f $CORE_DIR/dockerfile $CORE_DIR || {
+docker image build -t ana-model -f $MODEL_DIR/dockerfile $MODEL_DIR || {
   echo "An error occurred while training the model" >&2
   exit 1
 }
 
-docker container run -it --rm --name ana-core-train \
-  --mount type=bind,src=$HOST_PATH/core,dst=/core \
-  ana-core pipenv run python core -m train
+docker container run -it --rm --name ana-model-train \
+  --mount type=bind,src=$HOST_PATH/model,dst=/model \
+  ana-model pipenv run python src/main.py -m train

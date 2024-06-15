@@ -12,7 +12,7 @@ export LOG_DIR=$SCRIPT_DIR/.logs
 # The path to the config directory
 export CONFIG_DIR=$ROOT_DIR/config
 # The root directory of the ANa language model
-export CORE_DIR=$ROOT_DIR/core
+export MODEL_DIR=$ROOT_DIR/model
 # The root directory of the ANa CLI 
 export CLI_DIR=$ROOT_DIR/cli
 # The root directory of the ANa Agent
