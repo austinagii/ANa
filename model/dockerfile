@@ -5,9 +5,11 @@ RUN pip install pipenv
 
 WORKDIR /model
 
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
+COPY Pipfile.lock .
+RUN pipenv sync 
+
+RUN echo "PS1='\[\e[32m\]\u@ana-model:\w\[\e[0m\]$ '" >> /root/.bashrc
 
 ENV PYTHONPATH=/model/src
 
-ENTRYPOINT ["./entrypoint.sh"]
+CMD ["pipenv", "shell"]
