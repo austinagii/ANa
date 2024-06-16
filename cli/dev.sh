@@ -2,9 +2,8 @@
 
 USAGE_MSG=$(cat <<-END
 
-Usage: ana build [options] <component>
+Usage: ana dev [options] <component>
 
-Build an image of a component from its dockerfile
 
 Options:
     -f, --force             Forces the image to be built with the components current version number 
@@ -61,15 +60,14 @@ isValidComponent $COMPONENT || {
 
 # Get the current version of the specified component
 case $COMPONENT in
-    api)
-        VERSION=$(cat $API_ROOT_DIR/version)
+    agent)
+        docker image build -t $AGENT_CONTAINER_NAME -f $AGENT_ROOT_DIR/dockerfile $AGENT_ROOT_DIR 
+        
+        docker container run -it --rim --name $AGENT_CONTAINER_NAME
+        VERSION=$(cat $AGENT_ROOT_DIR/version)
         BUILD_DIR=$API_ROOT_DIR
         ;;
-    ui)
-        VERSION=$(jq -r '.version' $UI_ROOT_DIR/package.json)
-        BUILD_DIR=$UI_ROOT_DIR
-        ;;
-    core)
+    model)
         VERSION=$(awk -F "=" '/version/ {print $2}' $CORE_ROOT_DIR/setup.cfg | tr -d ' ')
         BUILD_DIR=$CORE_ROOT_DIR
         ;;
