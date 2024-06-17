@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("ANa")
 
 def train():
-    dataset = datasets.load_dataset("emotion")
+    dataset = datasets.load_dataset("emotion", trust_remote_code=True)
     train_dataset, validation_dataset = dataset['train'], dataset['validation']
     tokenizer = Tokenizer()
     codec = Codec(Tokenizer(lazy=True).tokenize_all(dataset['train']['text'], flatten=True))

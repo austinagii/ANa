@@ -15,23 +15,11 @@ Options:
     -v, --version   Show the current version number
 
 Commands:
-    chat            Start a chat with ANa
-                    Example: ana chat
+    agent           Manage or interact with the ANa agent
+                    Example: ana agent chat
 
-    build           Build the docker image for the ANa agent
-                    Example: ana build  
-
-    start           Start the ANa agent's docker container 
-                    Example: ana start 
-
-    stop            Stop the ANa agent's docker container
-                    Example: ana stop 
-
-    train           Train the ANa language model 
-                    Example: ana train 
-
-    serve           Serve the ANa language model
-                    Example: ana serve 
+    model           Manage or interact with the ANa language model 
+                    Example: ana model train 
 
 Try 'ana <command> --help' for more information on a specific commnad
 END
@@ -59,26 +47,11 @@ COMMAND=$1
 shift
 case $COMMAND in
   # component management commands
-  build) 
-    bash $SCRIPT_DIR/build.sh "$@"
+  agent)
+    bash $AGENT_DIR/scripts/agent.sh "$@"
     ;;
-  chat)
-    bash $SCRIPT_DIR/chat.sh "$@"
-    ;;
-  push)
-    bash $SCRIPT_DIR/push.sh "$@"
-    ;;
-  start)
-    bash $SCRIPT_DIR/start.sh "$@"
-    ;;
-  stop)
-    bash $SCRIPT_DIR/stop.sh "$@"
-    ;;
-  train)
-    bash $SCRIPT_DIR/train.sh "$@"
-    ;;
-  serve)
-    bash $SCRIPT_DIR/serve.sh "$@"
+  model)
+    bash $MODEL_DIR/scripts/model.sh "$@"
     ;;
   *)
     echo "ana '$COMMAND' is not a recognized command" >/dev/stderr

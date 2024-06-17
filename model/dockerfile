@@ -12,4 +12,4 @@ RUN echo "PS1='\[\e[32m\]\u@ana-model:\w\[\e[0m\]$ '" >> /root/.bashrc
 
 ENV PYTHONPATH=/model/src
 
-CMD ["pipenv", "shell"]
+CMD ["bash", "entrypoint.sh"]

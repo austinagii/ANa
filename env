@@ -7,8 +7,9 @@ Usage: env [options]
 Start or connect to the local development environment 
 
 Options:
-    -s, --shell   Spawn a new shell inside the development environment
-    -h, --help    Show this message
+    -r, --rebuild     Forces the dev container to rebuild
+    -s, --shell       Spawn a new shell inside the development environment
+    -h, --help        Show this message
 END
 )
 
@@ -25,6 +26,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     -s|--shell)
       SHOULD_SPAWN_NEW_SHELL=0  
+      shift
+      ;;
+    -r|--rebuild)
+      SHOULD_REBUILD=0  
       shift
       ;;
     *)
@@ -82,7 +87,7 @@ fi
 
 if ! check_image_exists; then 
   get_devcontainer_file_hash > .devcontainer-hash
-  docker build -t $IMAGE_NAME --file $CURRENT_DIR/dockerfile --no-cache $CURRENT_DIR &>$CURRENT_DIR/.devcontainer-build-log.txt 2>&1 &
+  docker image build -t $IMAGE_NAME --file $CURRENT_DIR/dockerfile --no-cache $CURRENT_DIR &>$CURRENT_DIR/.devcontainer-build-log.txt 2>&1 &
   PID=$!
   show_build_loader $PID
   wait $PID
