@@ -5,7 +5,8 @@ name = "pypi"
 
 [packages]
 datasets = "~=2.20"
-torch = "~=2.3"
+torch = "*"
+transformers = "*"
 
 [dev-packages]
 pytest = "~=7.4"
